@@ -21,7 +21,11 @@ export interface GradeRow {
   examGrade: number;
 }
 
-// Update the signature to be async and return a Promise
+/**
+ * returns Promise because scrapers return promises
+ * 
+ * updates the all examGrades field in GradeRow array 
+ */
 export const calculateExamGrades = async (
   rows: GradeRow[],
 ): Promise<GradeRow[]> => {
@@ -44,7 +48,7 @@ export const calculateExamGrades = async (
 
       return {
         ...row,
-        examGrade: Number((Math.round(calculatedExam * 100) / 100).toFixed(2)),
+        examGrade: Number(calculatedExam.toFixed(2)),
       };
     }),
   );
