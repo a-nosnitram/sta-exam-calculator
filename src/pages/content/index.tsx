@@ -1,20 +1,63 @@
-import { createRoot } from 'react-dom/client';
-import './style.css' 
-const div = document.createElement('div');
-div.id = '__root';
-document.body.appendChild(div);
+// src/pages/content/index.tsx
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@src/components/ui/dialog";
+import { useEffect, useState } from "react";
+import { createRoot } from "react-dom/client";
+import "./style.css";
 
-const rootContainer = document.querySelector('#__root');
-if (!rootContainer) throw new Error("Can't find Content root element");
-const root = createRoot(rootContainer);
-root.render(
-  <div className='absolute bottom-0 left-0 text-lg text-black bg-amber-400 z-50'  >
-    content script <span className='your-class'>loaded</span>
-  </div>
-);
+function ContentApp() {
+  const [isOpen, setIsOpen] = useState(false);
 
-try {
-  console.log('content script loaded');
-} catch (e) {
-  console.error(e);
+  useEffect(() => {
+    // Listen for the message from Popup.tsx
+    const messageListener = (request: any) => {
+      if (request.action === "TOGGLE_STA_CALCULATOR") {
+        alert("sadasdsad");
+        setIsOpen(true);
+      }
+    };
+
+    chrome.runtime.onMessage.addListener(messageListener);
+
+    // Cleanup listener on unmount
+    return () => chrome.runtime.onMessage.removeListener(messageListener);
+  }, []);
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>STA Exam Calculator</DialogTitle>
+          <DialogDescription>
+            Calculate your final grades directly on this page.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="py-4">
+          <p className="text-sm text-muted-foreground">
+            Your calculator inputs and logic go here...
+          </p>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 }
+
+// -----------------------------------------
+// Mount React to the Host Webpage
+// -----------------------------------------
+const init = () => {
+  const rootContainer = document.createElement("div");
+  rootContainer.id = "sta-calculator-extension-root";
+  document.body.appendChild(rootContainer);
+
+  const root = createRoot(rootContainer);
+  root.render(<ContentApp />);
+};
+
+init();
