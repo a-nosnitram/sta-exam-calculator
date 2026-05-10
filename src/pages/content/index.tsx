@@ -36,7 +36,7 @@ function ContentApp() {
       }
 
       const links = scrapeCourseworkLinksFromMySaint(document);
-      chrome.runtime.sendMessage({ type: "SCRAPE_CW_LINKS", links });
+      chrome.runtime.sendMessage({ type: "SCRAPE_CW_GRADES", links });
     };
 
     if (isMySaint) {

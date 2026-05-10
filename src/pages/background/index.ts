@@ -1,14 +1,19 @@
 console.log("background script loaded");
-import { scrapeCourseworkLinksFromMySaint } from "@src/scripts/scrape_cw_grades";
+import { scrapeCourseworkGrade } from "@src/scripts/scrape_cw_grades";
 
 // listen for messages from content scripts
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
   console.log("Received message in background script:", request);
-  if (request.type === "SCRAPE_CW_LINKS") {
-    // call the scrape links function from scrape_cw_grades.ts
+  if (request.type === "SCRAPE_CW_GRADES") {
+    // call the scrape function from scrape_cw_grades.ts
+    let grades = [];
     for (const link of request.links) {
-      scrapeCourseworkLinksFromMySaint(link);
+      console.log(`Scraping coursework grade from link: ${link}`);
+      grades.push({ grade: await scrapeCourseworkGrade(link), link: link });
     }
+    // store the grades in local storage with the module code as the key and the grade as the value
+    chrome.storage.local.set({ courseworkGrades: grades });
     sendResponse({ status: "success" });
+    return true; // indicate that we will send a response asynchronously
   }
 });
