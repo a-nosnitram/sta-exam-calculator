@@ -10,6 +10,7 @@ import {
 import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./style.css";
+import { scrapeCourseworkLinksFromMySaint } from "@src/scripts/scrape_cw_grades";
 
 function ContentApp() {
   const [isOpen, setIsOpen] = useState(false);
@@ -24,8 +25,31 @@ function ContentApp() {
 
     chrome.runtime.onMessage.addListener(messageListener);
 
+    let observer: MutationObserver | null = null;
+    const isMySaint = window.location.href.includes(
+      "https://mysaint.st-andrews.ac.uk/uPortal/f/my-courses/normal/render.uP",
+    );
+
+    const scrapeAndSend = () => {
+      if (!isMySaint) {
+        return;
+      }
+
+      const links = scrapeCourseworkLinksFromMySaint(document);
+      chrome.runtime.sendMessage({ type: "SCRAPE_CW_LINKS", links });
+    };
+
+    if (isMySaint) {
+      scrapeAndSend();
+      observer = new MutationObserver(scrapeAndSend);
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
+
     // Cleanup listener on unmount
-    return () => chrome.runtime.onMessage.removeListener(messageListener);
+    return () => {
+      chrome.runtime.onMessage.removeListener(messageListener);
+      observer?.disconnect();
+    };
   }, []);
 
   return (
