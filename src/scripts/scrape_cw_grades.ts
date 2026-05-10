@@ -12,34 +12,41 @@
     for each module, extract the coursework grade and store it in local storage
 */
 
-import { JSDOM } from "jsdom";
-import { a } from "node_modules/vite/dist/node/moduleRunnerTransport.d-DJ_mE5sf";
-
-async function fetchCourseworkPage(url: string): Promise<Document> {
-  const resp = await fetch(url, { credentials: "include" });
-  const html = await resp.text();
-  const dom = new JSDOM(html);
-  const document = dom.window.document;
-
-  return document;
+// content script for when user is on https://mysaint.st-andrews.ac.uk/uPortal/f/my-courses/normal/render.uP
+export function scrapeCourseworkLinksFromMySaint(doc: Document): string[] {
+  return Array.from(
+    doc.querySelectorAll('a.list-group-item[data-type="coursework"]'),
+  )
+    .map((a) => (a as HTMLAnchorElement).href)
+    .filter((href) => href.includes("mms.st-andrews.ac.uk/mms/module/"));
 }
 
-async function scarpeCourseworkLinks(): Promise<string[]> {
-  const url =
-    "https://mysaint.st-andrews.ac.uk/uPortal/f/my-courses/normal/render.uP";
-  const document = await fetchCourseworkPage(url);
+// returns the text content of the coursework page given its URL
+async function fetchCourseworkPage(url: string): Promise<string> {
+  const resp = await fetch(url, { credentials: "include" });
+  if (!resp.ok) {
+    throw new Error(
+      `Failed to fetch coursework page: ${resp.status} ${resp.statusText}`,
+    );
+  }
+  return await resp.text();
+}
 
-  const courseworkLinks = Array.from(
-    document.querySelectorAll('a.list-group-item[data-type="coursework"]'),
-  ).map((a) => (a as HTMLAnchorElement).href);
-
-  return courseworkLinks;
+export function parseCourseworkGradeFromText(html: string): number {
+  const text = html.replace(/\s+/g, " ").trim();
+  // "Running average: 16.5"
+  const match = text.match(
+    /Running\s*average\s*(?::|=)?\s*(\d{1,3}(?:\.\d+)?)/i,
+  );
+  if (!match) {
+    throw new Error("Failed to parse coursework grade from text");
+  }
+  return match ? Number.parseFloat(match[1]) : 0;
 }
 
 export async function scrapeCourseworkGrade(
   url: string,
 ): Promise<number | null> {
-  const document = await fetchCourseworkPage(url);
-
-  return 0;
+  const html = await fetchCourseworkPage(url);
+  return parseCourseworkGradeFromText(html);
 }
