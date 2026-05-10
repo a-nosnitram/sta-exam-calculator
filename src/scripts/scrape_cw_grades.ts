@@ -46,7 +46,7 @@ async function fetchCourseworkPage(url: string): Promise<string> {
   return await resp.text();
 }
 
-export function parseCourseworkGradeFromText(html: string): number {
+function parseCourseworkGradeFromText(html: string): number {
   const text = html.replace(/\s+/g, " ").trim();
   // "Running average: 16.5"
   const match = text.match(
@@ -60,9 +60,11 @@ export function parseCourseworkGradeFromText(html: string): number {
   return match ? Number.parseFloat(match[1]) : 0;
 }
 
-export async function scrapeCourseworkGrade(
-  url: string,
-): Promise<[number, string] | null> {
+export async function scrapeCourseworkGrade(): Promise<
+  [number, string] | null
+> {
+  const url =
+    "https://mysaint.st-andrews.ac.uk/uPortal/f/my-courses/normal/render.uP";
   const html = await fetchCourseworkPage(url);
   // https://mms.st-andrews.ac.uk/mms/module/2025_6/S2/CS3052/CS3052+Coursework/
   const moduleCodeMatch = url.match(

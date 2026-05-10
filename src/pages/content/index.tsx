@@ -27,14 +27,13 @@ function ContentApp() {
 
     let observer: MutationObserver | null = null;
     const isMySaint = window.location.href.includes(
-      "https://mysaint.st-andrews.ac.uk/uPortal/f/my-courses/normal/render.uP",
+      "https://mysaint.st-andrews.ac.uk/",
     );
 
     const scrapeAndSend = () => {
       if (!isMySaint) {
         return;
       }
-
       const links = scrapeCourseworkLinksFromMySaint(document);
       chrome.runtime.sendMessage({ type: "SCRAPE_CW_GRADES", links });
     };
