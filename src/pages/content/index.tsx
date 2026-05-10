@@ -11,13 +11,14 @@ import { scrapeCourseworkLinksFromMySaint } from "@src/scripts/scrape_cw_grades"
 import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./style.css";
+import { scrapeOverallModuleGrades } from "@src/scripts/scrape_module_grades";
 
 function ContentApp() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     const isMySaint = window.location.href.includes(
-      "https://mysaint.st-andrews.ac.uk/",
+      "https://mysaint.st-andrews.ac.uk/uPortal/f/my-courses/normal/render.uP",
     );
     if (!isMySaint) {
       return;
@@ -33,13 +34,26 @@ function ContentApp() {
 
     let observer: MutationObserver | null = null;
 
+    const scrapeAndStoreOverallGrades = () => {
+      const overallGrades = scrapeOverallModuleGrades(document);
+      if (Object.keys(overallGrades).length > 0) {
+        console.log("Overall module grades:", overallGrades);
+        chrome.storage.local.set({ overallModuleGrades: overallGrades });
+      }
+    };
+
     const scrapeAndSend = () => {
       const links = scrapeCourseworkLinksFromMySaint(document);
       chrome.runtime.sendMessage({ type: "SCRAPE_CW_GRADES", links });
     };
 
+    scrapeAndStoreOverallGrades();
+
     scrapeAndSend();
-    observer = new MutationObserver(scrapeAndSend);
+    observer = new MutationObserver(() => {
+      scrapeAndSend();
+      scrapeAndStoreOverallGrades();
+    });
     observer.observe(document.body, { childList: true, subtree: true });
 
     // Cleanup listener on unmount

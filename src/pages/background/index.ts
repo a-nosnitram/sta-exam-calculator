@@ -6,17 +6,18 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
   console.log("Received message in background script:", request);
   if (request.type === "SCRAPE_CW_GRADES") {
     // call the scrape function from scrape_cw_grades.ts
-    let grades = [];
+    let cw_grades = [];
+
     for (const link of request.links) {
       console.log(`Scraping coursework grade from link: ${link}`);
       const [grade, moduleCode] = (await scrapeCourseworkGrade(link)) ?? [
         0,
         "something went wrong",
       ];
-      grades.push({ module: moduleCode, grade });
+      cw_grades.push({ module: moduleCode, grade });
     }
     // store the grades in local storage with the module code as the key and the grade as the value
-    chrome.storage.local.set({ courseworkGrades: grades });
+    chrome.storage.local.set({ courseworkGrades: cw_grades });
     sendResponse({ status: "success" });
     return true; // indicate that we will send a response asynchronously
   }
