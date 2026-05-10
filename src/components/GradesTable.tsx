@@ -216,7 +216,7 @@ export function GradesTable() {
           </Table>
         </div>
 
-        <div className="flex justify-end pt-2">
+        <div className="flex justify-end pt-6">
           <Button
             onClick={handleCalculate}
             disabled={isLoading}

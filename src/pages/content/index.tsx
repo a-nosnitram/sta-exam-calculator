@@ -3,7 +3,6 @@ import { GradesTable } from "@src/components/GradesTable";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@src/components/ui/dialog";
@@ -17,10 +16,11 @@ function ContentApp() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    const isMySaint = window.location.href.includes(
-      "https://mysaint.st-andrews.ac.uk/uPortal/f/my-courses/normal/render.uP",
-    );
-    if (!isMySaint) {
+    const TARGET_URL =
+      "https://mysaint.st-andrews.ac.uk/uPortal/f/my-courses/normal/render.uP";
+    const isCorrectPage = window.location.href === TARGET_URL;
+
+    if (!isCorrectPage) {
       return;
     }
     // Listen for the message from Popup.tsx
@@ -69,9 +69,6 @@ function ContentApp() {
         <div className="sta-extension-wrapper">
           <DialogHeader>
             <DialogTitle>STA Exam Calculator</DialogTitle>
-            <DialogDescription>
-              Calculate your final grades directly on this page.
-            </DialogDescription>
           </DialogHeader>
           <GradesTable />
         </div>
