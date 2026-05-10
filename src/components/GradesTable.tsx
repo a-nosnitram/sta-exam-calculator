@@ -20,6 +20,7 @@ export interface GradeRow {
   cwAvg: number;
   totalGrade: number;
   examGrade: number;
+  cwPercent?: number;
 }
 
 /**
@@ -36,7 +37,13 @@ export const calculateExamGrades = async (
         return { ...row, examGrade: -1 };
       }
 
-      const [_, cwPercent] = await scrapeModuleAssessmentPattern(row.module);
+      let cwPercent = row.cwPercent;
+      if (cwPercent === undefined) {
+        const [_, fetchedCwPercent] = await scrapeModuleAssessmentPattern(
+          row.module,
+        );
+        cwPercent = fetchedCwPercent;
+      }
 
       const cwWeight = cwPercent / 100;
       const exWeight = 1 - cwWeight;
@@ -60,22 +67,47 @@ export function GradesTable() {
   const [rows, setRows] = useState<GradeRow[]>([]);
 
   useEffect(() => {
-    storage.local.get("courseworkGrades").then((result) => {
+    storage.local.get("courseworkGrades").then(async (result) => {
       const grades = result.courseworkGrades;
       if (Array.isArray(grades)) {
-        const newRows: GradeRow[] = grades.map((g: any, index: number) => ({
-          id: index + 1,
-          module: g.module || "???",
-          cwAvg:
-            typeof g.grade === "number" && !Number.isNaN(g.grade)
-              ? g.grade
-              : NaN,
-          totalGrade: NaN,
-          examGrade: NaN,
-        }));
-        console.log(newRows);
+        setIsLoading(true);
+        const validRows: GradeRow[] = [];
+        let idCounter = 1;
 
-        setRows(newRows);
+        const fetchPromises = grades.map(async (g: any) => {
+          const moduleCode = g.module || "???";
+          const [examPercent, cwPercent] =
+            await scrapeModuleAssessmentPattern(moduleCode);
+          return { g, cwPercent };
+        });
+
+        const results = await Promise.allSettled(fetchPromises);
+
+        results.forEach((res, index) => {
+          if (res.status === "fulfilled") {
+            const { g, cwPercent } = res.value;
+            validRows.push({
+              id: idCounter++,
+              module: g.module || "???",
+              cwAvg:
+                typeof g.grade === "number" && !Number.isNaN(g.grade)
+                  ? g.grade
+                  : NaN,
+              totalGrade: NaN,
+              examGrade: NaN,
+              cwPercent,
+            });
+          } else {
+            console.warn(
+              `Skipping module ${grades[index].module} due to assessment pattern fetch failure:`,
+              res.reason,
+            );
+          }
+        });
+
+        console.log(validRows);
+        setRows(validRows);
+        setIsLoading(false);
       }
     });
   }, []);
