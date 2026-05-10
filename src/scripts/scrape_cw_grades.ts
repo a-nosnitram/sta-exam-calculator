@@ -62,7 +62,16 @@ export function parseCourseworkGradeFromText(html: string): number {
 
 export async function scrapeCourseworkGrade(
   url: string,
-): Promise<number | null> {
+): Promise<[number, string] | null> {
   const html = await fetchCourseworkPage(url);
-  return parseCourseworkGradeFromText(html);
+  // https://mms.st-andrews.ac.uk/mms/module/2025_6/S2/CS3052/CS3052+Coursework/
+  const moduleCodeMatch = url.match(
+    /mms\.st-andrews\.ac\.uk\/mms\/module\/\d{4}_\d\/[sS]\d\/([a-zA-Z0-9]+)/i,
+  );
+  if (!moduleCodeMatch) {
+    throw new Error(`Failed to extract module code from URL: ${url}`);
+  }
+  const moduleCode = moduleCodeMatch[1].toUpperCase();
+  const grade = parseCourseworkGradeFromText(html);
+  return [grade, moduleCode];
 }

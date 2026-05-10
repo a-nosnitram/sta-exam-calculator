@@ -9,7 +9,11 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
     let grades = [];
     for (const link of request.links) {
       console.log(`Scraping coursework grade from link: ${link}`);
-      grades.push({ grade: await scrapeCourseworkGrade(link), link: link });
+      const [grade, moduleCode] = (await scrapeCourseworkGrade(link)) ?? [
+        0,
+        "something went wrong",
+      ];
+      grades.push({ module: moduleCode, grade });
     }
     // store the grades in local storage with the module code as the key and the grade as the value
     chrome.storage.local.set({ courseworkGrades: grades });
