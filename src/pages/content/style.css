@@ -1,6 +1,6 @@
-/* src/pages/content/style.css */
 @import "tailwindcss";
 
+/* 1. Define Variables */
 #sta-calculator-extension-root,
 [data-radix-portal] {
   --background: 0 0% 100%;
@@ -25,25 +25,63 @@
   --radius: 0.5rem;
 }
 
-.dark #sta-calculator-extension-root,
-.dark [data-radix-portal] {
-  --background: 240 10% 3.9%;
-  --foreground: 0 0% 98%;
-  --card: 240 10% 3.9%;
-  --card-foreground: 0 0% 98%;
-  --popover: 240 10% 3.9%;
-  --popover-foreground: 0 0% 98%;
-  --primary: 0 0% 98%;
-  --primary-foreground: 240 5.9% 10%;
-  --secondary: 240 3.7% 15.9%;
-  --secondary-foreground: 0 0% 98%;
-  --muted: 240 3.7% 15.9%;
-  --muted-foreground: 240 5% 64.9%;
-  --accent: 240 3.7% 15.9%;
-  --accent-foreground: 0 0% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 240 3.7% 15.9%;
-  --input: 240 3.7% 15.9%;
-  --ring: 240 4.9% 83.9%;
+/* 2. Layout & Table Fixes (Ensures the line spans 100%) */
+.sta-extension-wrapper table {
+  width: 100% !important;
+  display: table !important;
+  border-collapse: collapse !important;
+  margin-top: 1rem !important;
+}
+
+.sta-extension-wrapper tr {
+  display: table-row !important;
+  border-bottom: 1px solid hsl(var(--border)) !important;
+}
+
+.sta-extension-wrapper th {
+  color: hsl(var(--muted-foreground)) !important;
+  font-weight: 500 !important;
+  text-align: left !important;
+  padding: 0.5rem !important;
+  background: transparent !important;
+}
+
+.sta-extension-wrapper td {
+  padding: 0.5rem !important;
+}
+
+/* 3. The Button Fix - Force the primary background */
+.sta-extension-wrapper button {
+  all: revert; /* Kill all MySaint inherited button styles */
+  appearance: none;
+  background-color: hsl(0 0% 0%) !important;
+  color: hsl(var(--primary-foreground)) !important;
+  padding: 0.5rem 1rem !important;
+  font-weight: 500 !important;
+  border: none !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: opacity 0.2s !important;
+}
+
+.sta-extension-wrapper button:hover {
+  opacity: 0.9 !important;
+}
+
+/* 4. Input Styling */
+.sta-extension-wrapper input {
+  background-color: hsl(var(--background)) !important;
+  border: 1px solid hsl(var(--input)) !important;
+  border-radius: var(--radius) !important;
+  color: hsl(var(--foreground)) !important;
+  padding: 0.25rem 0.5rem !important;
+  width: 100% !important;
+}
+
+/* 5. Cleanup invisible text */
+.sta-extension-wrapper h2,
+.sta-extension-wrapper p {
+  color: hsl(var(--foreground)) !important;
 }

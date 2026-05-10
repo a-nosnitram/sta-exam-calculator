@@ -61,6 +61,22 @@ export function GradesTable() {
       totalGrade: 17,
       examGrade: NaN,
     },
+    {
+      id: 2,
+      module: "CS3102",
+      cwPercent: 60,
+      cwAvg: 16,
+      totalGrade: 17,
+      examGrade: NaN,
+    },
+    {
+      id: 3,
+      module: "CS3102",
+      cwPercent: 60,
+      cwAvg: 16,
+      totalGrade: 17,
+      examGrade: NaN,
+    },
   ]);
 
   const updateRow = (
@@ -85,32 +101,43 @@ export function GradesTable() {
     "border-red-500 bg-red-50 text-red-900 focus-visible:ring-red-500 dark:bg-red-950/50 dark:text-red-200";
 
   return (
-    <div className="space-y-4 py-4">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Module</TableHead>
-            <TableHead>CW %</TableHead>
-            <TableHead>CW Avg</TableHead>
-            <TableHead>Total Grade</TableHead>
-            <TableHead className="text-right whitespace-nowrap">
+    <div className="space-y-4 py-4 m-0!">
+      <Table className="m-0! border-none!">
+        <TableHeader className="bg-transparent!">
+          <TableRow className="border-b! border-border! bg-transparent! hover:bg-transparent!">
+            <TableHead className="bg-transparent! text-primary-foreground! font-medium! p-2! border-none!">
+              Module
+            </TableHead>
+            <TableHead className="bg-transparent! text-primary-foreground! font-medium! p-2! border-none!">
+              CW %
+            </TableHead>
+            <TableHead className="bg-transparent! text-primary-foreground! font-medium! p-2! border-none!">
+              CW Avg
+            </TableHead>
+            <TableHead className="bg-transparent! text-primary-foreground! font-medium! p-2! border-none!">
+              Total Grade
+            </TableHead>
+            <TableHead className="bg-transparent! text-primary-foreground! font-medium! p-2! border-none! text-right whitespace-nowrap">
               Exam (Calc)
             </TableHead>
           </TableRow>
         </TableHeader>
 
-        <TableBody>
+        <TableBody className="border-none!">
           {rows.map((row) => (
-            <TableRow key={row.id}>
-              <TableCell>
+            <TableRow
+              key={row.id}
+              className="border-b! border-border! bg-transparent! hover:bg-transparent!"
+            >
+              <TableCell className="pr-2! border-none!">
                 <Input
                   value={row.module}
                   onChange={(e) => updateRow(row.id, "module", e.target.value)}
-                  className="w-24 bg-background"
+                  className="w-24 bg-background! border! border-input! rounded-md! px-3! py-1! h-9! m-0! shadow-none! text-foreground!"
                   placeholder="???"
                 />
               </TableCell>
-              <TableCell>
+              <TableCell className="pr-2! border-none!">
                 <Input
                   value={Number.isNaN(row.cwPercent) ? "" : row.cwPercent}
                   onChange={(e) =>
@@ -120,10 +147,10 @@ export function GradesTable() {
                       e.target.value === "" ? NaN : Number(e.target.value),
                     )
                   }
-                  className={`w-20 bg-background ${isInvalid(row.cwPercent) ? errorClasses : ""}`}
+                  className={`w-20 bg-background! border! border-input! rounded-md! px-3! py-1! h-9! m-0! shadow-none! text-foreground! ${isInvalid(row.cwPercent) ? errorClasses : ""}`}
                 />
               </TableCell>
-              <TableCell>
+              <TableCell className="pr-2! border-none!">
                 <Input
                   value={Number.isNaN(row.cwAvg) ? "" : row.cwAvg}
                   onChange={(e) =>
@@ -133,10 +160,10 @@ export function GradesTable() {
                       e.target.value === "" ? NaN : Number(e.target.value),
                     )
                   }
-                  className={`w-20 bg-background ${isInvalid(row.cwAvg) ? errorClasses : ""}`}
+                  className={`w-20 bg-background! border! border-input! rounded-md! px-3! py-1! h-9! m-0! shadow-none! text-foreground! ${isInvalid(row.cwAvg) ? errorClasses : ""}`}
                 />
               </TableCell>
-              <TableCell>
+              <TableCell className="pr-2! border-none!">
                 <Input
                   value={Number.isNaN(row.totalGrade) ? "" : row.totalGrade}
                   onChange={(e) =>
@@ -146,10 +173,10 @@ export function GradesTable() {
                       e.target.value === "" ? NaN : Number(e.target.value),
                     )
                   }
-                  className={`w-20 bg-background ${isInvalid(row.totalGrade) ? errorClasses : ""}`}
+                  className={`w-20 bg-background! border! border-input! rounded-md! px-3! py-1! h-9! m-0! shadow-none! text-foreground! ${isInvalid(row.totalGrade) ? errorClasses : ""}`}
                 />
               </TableCell>
-              <TableCell className="text-right font-medium">
+              <TableCell className="pr-2! border-none! text-right font-medium">
                 {row.examGrade === -1 ? (
                   <span className="text-destructive text-xs">
                     Values required
@@ -159,7 +186,9 @@ export function GradesTable() {
                     0, really???
                   </span>
                 ) : !Number.isNaN(row.examGrade) ? (
-                  <span className="text-primary">{row.examGrade}</span>
+                  <span className="text-black! font-bold!">
+                    {row.examGrade}
+                  </span>
                 ) : (
                   <span className="text-muted-foreground">-</span>
                 )}
@@ -170,7 +199,12 @@ export function GradesTable() {
       </Table>
 
       <div className="flex justify-end pt-2">
-        <Button onClick={handleCalculate}>Calculate</Button>
+        <Button
+          onClick={handleCalculate}
+          className="text-white! rounded-md! px-4! py-2! h-9! shadow-none! border-none! bg-primary! hover:bg-primary/90!"
+        >
+          Calculate
+        </Button>
       </div>
     </div>
   );
