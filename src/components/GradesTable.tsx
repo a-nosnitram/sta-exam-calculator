@@ -21,7 +21,7 @@ export interface GradeRow {
   cwAvg: number | string;
   totalGrade: number | string;
   examGrade: number;
-  cwPercent?: number;
+  cwPercent?: number | string;
 }
 
 const getModuleYearKey = (module: string, academicYear?: string): string =>
@@ -44,20 +44,28 @@ export const calculateExamGrades = async (
         return { ...row, examGrade: -1 };
       }
 
-      let cwPercent = row.cwPercent;
-      if (cwPercent === undefined) {
-        const [_, fetchedCwPercent] = await scrapeModuleAssessmentPattern(
-          row.module,
-          row.academicYear,
-        );
-        cwPercent = fetchedCwPercent;
+      let cwPercentNum = typeof row.cwPercent === "string" ? Number.parseFloat(row.cwPercent) : row.cwPercent;
+      if (cwPercentNum === undefined || Number.isNaN(cwPercentNum)) {
+        try {
+          const [_, fetchedCwPercent] = await scrapeModuleAssessmentPattern(
+            row.module,
+            row.academicYear,
+          );
+          cwPercentNum = fetchedCwPercent;
+        } catch (err) {
+          console.warn(`Could not fetch assessment pattern for ${row.module} during calculation`, err);
+        }
       }
 
-      const cwWeight = cwPercent / 100;
+      if (cwPercentNum === undefined || Number.isNaN(cwPercentNum)) {
+        return { ...row, examGrade: -1 }; // Indicate values are required
+      }
+
+      const cwWeight = cwPercentNum / 100;
       const exWeight = 1 - cwWeight;
 
       if (exWeight <= 0) {
-        return { ...row, examGrade: 0 };
+        return { ...row, examGrade: 0, cwPercent: cwPercentNum };
       }
 
       const calculatedExam = (totalGradeNum - cwAvgNum * cwWeight) / exWeight;
@@ -65,6 +73,7 @@ export const calculateExamGrades = async (
       return {
         ...row,
         examGrade: Number(calculatedExam.toFixed(2)),
+        cwPercent: cwPercentNum,
       };
     }),
   );
@@ -109,8 +118,15 @@ export function GradesTable() {
             const moduleCode = (g.module || "???").toUpperCase();
             const academicYear =
               typeof g.academicYear === "string" ? g.academicYear : undefined;
-            const [_, cwPercent] =
-              await scrapeModuleAssessmentPattern(moduleCode, academicYear);
+            
+            let cwPercent: number | undefined = undefined;
+            try {
+              const [_, fetchedCwPercent] = await scrapeModuleAssessmentPattern(moduleCode, academicYear);
+              cwPercent = fetchedCwPercent;
+            } catch (err) {
+              console.warn(`Could not fetch assessment pattern for ${moduleCode}`, err);
+            }
+            
             return { g, moduleCode, academicYear, cwPercent };
           });
 
@@ -137,7 +153,7 @@ export function GradesTable() {
               });
             } else {
               console.warn(
-                `Skipping module ${grades[index].module} due to assessment pattern fetch failure:`,
+                `Unexpected failure for module ${grades[index].module}:`,
                 res.reason,
               );
             }
@@ -198,6 +214,9 @@ export function GradesTable() {
                   Module
                 </TableHead>
                 <TableHead className="bg-transparent! text-primary-foreground! font-medium! border-none!">
+                  CW %
+                </TableHead>
+                <TableHead className="bg-transparent! text-primary-foreground! font-medium! border-none!">
                   CW Avg
                 </TableHead>
                 <TableHead className="bg-transparent! text-primary-foreground! font-medium! border-none!">
@@ -223,6 +242,17 @@ export function GradesTable() {
                       }
                       className="w-16 bg-background! border! border-input! rounded-md! px-3! py-1! h-9! m-0! shadow-none! text-foreground!"
                       placeholder="???"
+                    />
+                  </TableCell>
+
+                  <TableCell className="px-1 border-none!">
+                    <Input
+                      value={row.cwPercent || ""}
+                      onChange={(e) =>
+                        updateRow(row.id, "cwPercent", e.target.value)
+                      }
+                      className="w-16 bg-background! border! border-input! rounded-md! px-3! py-1! h-9! m-0! shadow-none! text-foreground!"
+                      placeholder="-"
                     />
                   </TableCell>
 
