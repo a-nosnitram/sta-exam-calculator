@@ -28,18 +28,16 @@ export const calculateExamGrades = (rows: GradeRow[]): GradeRow[] => {
       Number.isNaN(row.cwAvg) ||
       Number.isNaN(row.totalGrade)
     ) {
-      return { ...row, examGrade: -1 }; // -1 means "Values required"
+      return { ...row, examGrade: -1 };
     }
 
-    // check for 0s
     if (row.cwPercent === 0 || row.cwAvg === 0 || row.totalGrade === 0) {
-      return { ...row, examGrade: -2 }; // -2 means "0, really???"
+      return { ...row, examGrade: -2 };
     }
 
     const cwWeight = row.cwPercent / 100;
     const exWeight = 1 - cwWeight;
 
-    // If coursework is 100%, no exam needed
     if (exWeight <= 0) {
       return { ...row, examGrade: 0 };
     }
@@ -81,8 +79,10 @@ export function GradesTable() {
     setRows(calculateExamGrades(rows));
   };
 
-  // Helper function to determine if an input should be red
   const isInvalid = (val: number) => Number.isNaN(val) || val === 0;
+
+  const errorClasses =
+    "border-red-500 bg-red-50 text-red-900 focus-visible:ring-red-500 dark:bg-red-950/50 dark:text-red-200";
 
   return (
     <div className="space-y-4 py-4">
@@ -93,7 +93,9 @@ export function GradesTable() {
             <TableHead>CW %</TableHead>
             <TableHead>CW Avg</TableHead>
             <TableHead>Total Grade</TableHead>
-            <TableHead className="text-right">Exam (Calc)</TableHead>
+            <TableHead className="text-right whitespace-nowrap">
+              Exam (Calc)
+            </TableHead>
           </TableRow>
         </TableHeader>
 
@@ -104,7 +106,7 @@ export function GradesTable() {
                 <Input
                   value={row.module}
                   onChange={(e) => updateRow(row.id, "module", e.target.value)}
-                  className="w-24"
+                  className="w-24 bg-background"
                   placeholder="???"
                 />
               </TableCell>
@@ -118,8 +120,7 @@ export function GradesTable() {
                       e.target.value === "" ? NaN : Number(e.target.value),
                     )
                   }
-                  // Check against both NaN and 0
-                  className={`w-20 ${isInvalid(row.cwPercent) ? "border-destructive bg-destructive" : ""}`}
+                  className={`w-20 bg-background ${isInvalid(row.cwPercent) ? errorClasses : ""}`}
                 />
               </TableCell>
               <TableCell>
@@ -132,7 +133,7 @@ export function GradesTable() {
                       e.target.value === "" ? NaN : Number(e.target.value),
                     )
                   }
-                  className={`w-20 ${isInvalid(row.cwAvg) ? "border-destructive bg-destructive" : ""}`}
+                  className={`w-20 bg-background ${isInvalid(row.cwAvg) ? errorClasses : ""}`}
                 />
               </TableCell>
               <TableCell>
@@ -145,7 +146,7 @@ export function GradesTable() {
                       e.target.value === "" ? NaN : Number(e.target.value),
                     )
                   }
-                  className={`w-20 ${isInvalid(row.totalGrade) ? "border-destructive bg-destructive" : ""}`}
+                  className={`w-20 bg-background ${isInvalid(row.totalGrade) ? errorClasses : ""}`}
                 />
               </TableCell>
               <TableCell className="text-right font-medium">
