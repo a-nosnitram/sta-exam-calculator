@@ -51,7 +51,7 @@ function ContentApp() {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-[500px] bg-background/80 backdrop-blur-xl border-border/50">
+      <DialogContent className="sm:max-w-[700px] bg-background/80 backdrop-blur-xl border-border/50">
         <div className="sta-extension-wrapper">
           <DialogHeader>
             <DialogTitle>STA Exam Calculator</DialogTitle>

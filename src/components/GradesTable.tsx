@@ -1,7 +1,7 @@
 // src/components/GradesTable.tsx
 
+import { Input } from "@base-ui/react";
 import { Button } from "@src/components/ui/button";
-import { Input } from "@src/components/ui/input";
 import {
   Table,
   TableBody,
@@ -23,8 +23,8 @@ export interface GradeRow {
 
 /**
  * returns Promise because scrapers return promises
- * 
- * updates the all examGrades field in GradeRow array 
+ *
+ * updates the all examGrades field in GradeRow array
  */
 export const calculateExamGrades = async (
   rows: GradeRow[],
@@ -78,6 +78,20 @@ export function GradesTable() {
       totalGrade: 17,
       examGrade: NaN,
     },
+    {
+      id: 4,
+      module: "CS3102",
+      cwAvg: 16,
+      totalGrade: 17,
+      examGrade: NaN,
+    },
+    {
+      id: 5,
+      module: "CS3102",
+      cwAvg: 16,
+      totalGrade: 17,
+      examGrade: NaN,
+    },
   ]);
 
   const updateRow = (
@@ -111,89 +125,106 @@ export function GradesTable() {
     "border-red-500 bg-red-50 text-red-900 focus-visible:ring-red-500 dark:bg-red-950/50 dark:text-red-200";
 
   return (
-    <div className="space-y-4 py-4 m-0!">
-      <Table className="m-0! border-none!">
-        <TableHeader className="bg-transparent!">
-          <TableRow className="border-b! border-border! bg-transparent! hover:bg-transparent!">
-            <TableHead className="bg-transparent! text-primary-foreground! font-medium! p-2! border-none!">
-              Module
-            </TableHead>
-            <TableHead className="bg-transparent! text-primary-foreground! font-medium! p-2! border-none!">
-              CW Avg
-            </TableHead>
-            <TableHead className="bg-transparent! text-primary-foreground! font-medium! p-2! border-none!">
-              Total Grade
-            </TableHead>
-            <TableHead className="bg-transparent! text-primary-foreground! font-medium! p-2! border-none! text-right whitespace-nowrap">
-              Exam (Calc)
-            </TableHead>
-          </TableRow>
-        </TableHeader>
+    <div className="space-y-4 m-0!">
+      {/* 1. Added a scrollable wrapper with a max-height */}
+      <div className="px-8">
+        <div className="max-h-[280px] overflow-y-auto overflow-x-hidden rounded-md ">
+          <Table className="border-none!">
+            {/* 2. Added sticky top-0 to keep header visible */}
+            <TableHeader className="bg-background! sticky top-0 z-10 shadow-sm">
+              <TableRow className="border-b! border-border! bg-background! hover:bg-transparent!">
+                <TableHead className="bg-transparent! text-primary-foreground! font-medium! border-none!">
+                  Module
+                </TableHead>
+                <TableHead className="bg-transparent! text-primary-foreground! font-medium! border-none!">
+                  CW Avg
+                </TableHead>
+                <TableHead className="bg-transparent! text-primary-foreground! font-medium! border-none!">
+                  Total Grade
+                </TableHead>
+                <TableHead className="bg-transparent! text-primary-foreground! font-medium! border-none! text-right whitespace-nowrap">
+                  Exam (Calc)
+                </TableHead>
+              </TableRow>
+            </TableHeader>
 
-        <TableBody className="border-none!">
-          {rows.map((row) => (
-            <TableRow
-              key={row.id}
-              className="border-b! border-border! bg-transparent! hover:bg-transparent!"
-            >
-              <TableCell className="pr-2! border-none!">
-                <Input
-                  value={row.module}
-                  onChange={(e) => updateRow(row.id, "module", e.target.value)}
-                  className="w-24 bg-background! border! border-input! rounded-md! px-3! py-1! h-9! m-0! shadow-none! text-foreground!"
-                  placeholder="???"
-                />
-              </TableCell>
-              <TableCell className="pr-2! border-none!">
-                <Input
-                  value={Number.isNaN(row.cwAvg) ? "" : row.cwAvg}
-                  onChange={(e) =>
-                    updateRow(
-                      row.id,
-                      "cwAvg",
-                      e.target.value === "" ? NaN : Number(e.target.value),
-                    )
-                  }
-                  className={`w-20 bg-background! border! border-input! rounded-md! px-3! py-1! h-9! m-0! shadow-none! text-foreground! ${isInvalid(row.cwAvg) ? errorClasses : ""}`}
-                />
-              </TableCell>
-              <TableCell className="pr-2! border-none!">
-                <Input
-                  value={Number.isNaN(row.totalGrade) ? "" : row.totalGrade}
-                  onChange={(e) =>
-                    updateRow(
-                      row.id,
-                      "totalGrade",
-                      e.target.value === "" ? NaN : Number(e.target.value),
-                    )
-                  }
-                  className={`w-20 bg-background! border! border-input! rounded-md! px-3! py-1! h-9! m-0! shadow-none! text-foreground! ${isInvalid(row.totalGrade) ? errorClasses : ""}`}
-                />
-              </TableCell>
-              <TableCell className="pr-2! border-none! text-right font-medium">
-                {row.examGrade === -1 ? (
-                  <span className="text-destructive text-xs">
-                    Values required
-                  </span>
-                ) : !Number.isNaN(row.examGrade) ? (
-                  <span className="text-black! font-bold">{row.examGrade}</span>
-                ) : (
-                  <span className="text-muted-foreground">-</span>
-                )}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+            <TableBody className="border-none!">
+              {rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  className="border-b! bg-transparent! hover:bg-transparent!"
+                >
+                  <TableCell className="px-1 border-none!">
+                    <Input
+                      value={row.module}
+                      onChange={(e) =>
+                        updateRow(row.id, "module", e.target.value)
+                      }
+                      className="w-16 bg-background! border! border-input! rounded-md! px-3! py-1! h-9! m-0! shadow-none! text-foreground!"
+                      placeholder="???"
+                    />
+                  </TableCell>
 
-      <div className="flex justify-end pt-2">
-        <Button
-          onClick={handleCalculate}
-          disabled={isLoading}
-          className="text-white! rounded-md! px-4! py-2! h-9! shadow-none! border-none! bg-primary! hover:bg-primary/90!"
-        >
-          {isLoading ? "Calculating..." : "Calculate"}
-        </Button>
+                  <TableCell className="px-1 border-none!">
+                    <Input
+                      value={Number.isNaN(row.cwAvg) ? "" : row.cwAvg}
+                      onChange={(e) =>
+                        updateRow(
+                          row.id,
+
+                          "cwAvg",
+
+                          e.target.value === "" ? NaN : Number(e.target.value),
+                        )
+                      }
+                      className={`w-16 bg-background! border! border-input! rounded-md! px-3! py-1! h-9! m-0! shadow-none! text-foreground! ${isInvalid(row.cwAvg) ? errorClasses : ""}`}
+                    />
+                  </TableCell>
+
+                  <TableCell className="px-1 border-none!">
+                    <Input
+                      value={Number.isNaN(row.totalGrade) ? "" : row.totalGrade}
+                      onChange={(e) =>
+                        updateRow(
+                          row.id,
+
+                          "totalGrade",
+
+                          e.target.value === "" ? NaN : Number(e.target.value),
+                        )
+                      }
+                      className={`w-16 bg-background! border! border-input! rounded-md! px-3! py-1! h-9! m-0! shadow-none! text-foreground! ${isInvalid(row.totalGrade) ? errorClasses : ""}`}
+                    />
+                  </TableCell>
+
+                  <TableCell className="px-1 border-none! text-right font-medium">
+                    {row.examGrade === -1 ? (
+                      <span className="text-destructive text-xs">
+                        Values required
+                      </span>
+                    ) : !Number.isNaN(row.examGrade) ? (
+                      <span className="text-black! font-bold">
+                        {row.examGrade}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+
+        <div className="flex justify-end pt-2">
+          <Button
+            onClick={handleCalculate}
+            disabled={isLoading}
+            className="text-white! rounded-md! px-4! py-2! h-9! shadow-none! border-none! bg-primary! hover:bg-primary/90!"
+          >
+            {isLoading ? "Calculating..." : "Calculate"}
+          </Button>
+        </div>
       </div>
     </div>
   );
