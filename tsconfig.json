@@ -1,34 +1,33 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
+    "target": "esnext",
+    "types": ["vite/client", "node", "chrome"],
     "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
+    "allowJs": false,
     "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
     "module": "esnext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
-    "isolatedModules": true,
+    "noEmit": true,
     "jsx": "react-jsx",
-    "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@src/*": ["src/*"],
+      "@assets/*": ["src/assets/*"],
+      "@locales/*": ["src/locales/*"],
+      "@pages/*": ["src/pages/*"]
     }
   },
   "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
-    "**/*.mts"
+    "src",
+    "utils",
+    "vite.config.base.ts",
+    "vite.config.chrome.ts",
+    "vite.config.firefox.ts"
   ],
-  "exclude": ["node_modules"]
 }
