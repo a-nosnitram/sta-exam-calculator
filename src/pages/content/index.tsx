@@ -16,6 +16,12 @@ function ContentApp() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
+    const isMySaint = window.location.href.includes(
+      "https://mysaint.st-andrews.ac.uk/",
+    );
+    if (!isMySaint) {
+      return;
+    }
     // Listen for the message from Popup.tsx
     const messageListener = (request: any) => {
       if (request.action === "TOGGLE_STA_CALCULATOR") {
@@ -26,23 +32,15 @@ function ContentApp() {
     chrome.runtime.onMessage.addListener(messageListener);
 
     let observer: MutationObserver | null = null;
-    const isMySaint = window.location.href.includes(
-      "https://mysaint.st-andrews.ac.uk/",
-    );
 
     const scrapeAndSend = () => {
-      if (!isMySaint) {
-        return;
-      }
       const links = scrapeCourseworkLinksFromMySaint(document);
       chrome.runtime.sendMessage({ type: "SCRAPE_CW_GRADES", links });
     };
 
-    if (isMySaint) {
-      scrapeAndSend();
-      observer = new MutationObserver(scrapeAndSend);
-      observer.observe(document.body, { childList: true, subtree: true });
-    }
+    scrapeAndSend();
+    observer = new MutationObserver(scrapeAndSend);
+    observer.observe(document.body, { childList: true, subtree: true });
 
     // Cleanup listener on unmount
     return () => {
