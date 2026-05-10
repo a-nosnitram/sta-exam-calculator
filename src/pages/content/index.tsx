@@ -55,14 +55,16 @@ function ContentApp() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>STA Exam Calculator</DialogTitle>
-          <DialogDescription>
-            Calculate your final grades directly on this page.
-          </DialogDescription>
-        </DialogHeader>
-        <GradesTable />
-      </DialogContent>
+        <div className="sta-extension-wrapper">
+          <DialogHeader>
+            <DialogTitle>STA Exam Calculator</DialogTitle>
+            <DialogDescription>
+              Calculate your final grades directly on this page.
+            </DialogDescription>
+          </DialogHeader>
+          <GradesTable />
+        </div>
+      </DialogContent>{" "}
     </Dialog>
   );
 }
