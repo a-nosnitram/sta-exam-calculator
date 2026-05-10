@@ -85,3 +85,28 @@
 .sta-extension-wrapper p {
   color: hsl(var(--foreground)) !important;
 }
+
+/* 6. Dialog Backdrop (The background blur) */
+[data-radix-portal] > div[style*="fixed"] {
+  backdrop-filter: blur(
+    8px
+  ) !important; /* Adjust this for more/less background blur */
+  background-color: rgba(0, 0, 0, 0.4) !important; /* Dims the background */
+}
+
+/* 7. Dialog Content (The frosted glass effect) */
+[data-radix-portal] [role="dialog"] {
+  background-color: hsla(
+    var(--background) / 0.85
+  ) !important; /* Translucent background */
+  backdrop-filter: blur(
+    16px
+  ) !important; /* Blurs what is directly behind the modal */
+  border: 1px solid hsla(var(--border) / 0.5) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37) !important;
+}
+
+/* Ensure the wrapper doesn't have a solid background that hides the blur */
+.sta-extension-wrapper {
+  background: transparent !important;
+}

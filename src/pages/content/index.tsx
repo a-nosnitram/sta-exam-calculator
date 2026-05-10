@@ -7,10 +7,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@src/components/ui/dialog";
+import { scrapeCourseworkLinksFromMySaint } from "@src/scripts/scrape_cw_grades";
 import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./style.css";
-import { scrapeCourseworkLinksFromMySaint } from "@src/scripts/scrape_cw_grades";
 
 function ContentApp() {
   const [isOpen, setIsOpen] = useState(false);
@@ -54,7 +54,7 @@ function ContentApp() {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] bg-background/80 backdrop-blur-xl border-border/50">
         <div className="sta-extension-wrapper">
           <DialogHeader>
             <DialogTitle>STA Exam Calculator</DialogTitle>
