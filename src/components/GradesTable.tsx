@@ -272,6 +272,7 @@ export function GradesTable() {
                       onChange={(e) =>
                         updateRow(row.id, "totalGrade", e.target.value)
                       }
+                      placeholder="-"
                       className={`w-16 bg-background! border! border-input! rounded-md! px-3! py-1! h-9! m-0! shadow-none! text-foreground! ${isInvalid(row.totalGrade) ? errorClasses : ""}`}
                     />
                   </TableCell>
