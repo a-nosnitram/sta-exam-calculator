@@ -11,7 +11,8 @@ import {
   TableRow,
 } from "@src/components/ui/table";
 import { scrapeModuleAssessmentPattern } from "@src/scripts/scrape_percentages";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { storage } from "webextension-polyfill";
 
 export interface GradeRow {
   id: number;
@@ -19,6 +20,7 @@ export interface GradeRow {
   cwAvg: number;
   totalGrade: number;
   examGrade: number;
+  cwPercent?: number;
 }
 
 /**
@@ -35,7 +37,13 @@ export const calculateExamGrades = async (
         return { ...row, examGrade: -1 };
       }
 
-      const [_, cwPercent] = await scrapeModuleAssessmentPattern(row.module);
+      let cwPercent = row.cwPercent;
+      if (cwPercent === undefined) {
+        const [_, fetchedCwPercent] = await scrapeModuleAssessmentPattern(
+          row.module,
+        );
+        cwPercent = fetchedCwPercent;
+      }
 
       const cwWeight = cwPercent / 100;
       const exWeight = 1 - cwWeight;
@@ -56,43 +64,70 @@ export const calculateExamGrades = async (
 
 export function GradesTable() {
   const [isLoading, setIsLoading] = useState(false);
-  const [rows, setRows] = useState<GradeRow[]>([
-    {
-      id: 1,
-      module: "CS3102",
-      cwAvg: 16,
-      totalGrade: 17,
-      examGrade: NaN,
-    },
-    {
-      id: 2,
-      module: "CS3102",
-      cwAvg: 16,
-      totalGrade: 17,
-      examGrade: NaN,
-    },
-    {
-      id: 3,
-      module: "CS3102",
-      cwAvg: 16,
-      totalGrade: 17,
-      examGrade: NaN,
-    },
-    {
-      id: 4,
-      module: "CS3102",
-      cwAvg: 16,
-      totalGrade: 17,
-      examGrade: NaN,
-    },
-    {
-      id: 5,
-      module: "CS3102",
-      cwAvg: 16,
-      totalGrade: 17,
-      examGrade: NaN,
-    },
-  ]);
+  const [rows, setRows] = useState<GradeRow[]>([]);
+
+  useEffect(() => {
+    storage.local
+      .get(["courseworkGrades", "overallModuleGrades"])
+      .then(async (result) => {
+        const grades = result.courseworkGrades;
+        const overallGrades = result.overallModuleGrades || [];
+        
+        // Create a lookup for overall grades by module code
+        const overallGradeMap = new Map<string, number>();
+        if (Array.isArray(overallGrades)) {
+          overallGrades.forEach((og: any) => {
+            if (og.module && typeof og.grade === "number") {
+              overallGradeMap.set(og.module, og.grade);
+            }
+          });
+        }
+
+        if (Array.isArray(grades)) {
+          setIsLoading(true);
+          const validRows: GradeRow[] = [];
+          let idCounter = 1;
+
+          const fetchPromises = grades.map(async (g: any) => {
+            const moduleCode = g.module || "???";
+            const [examPercent, cwPercent] =
+              await scrapeModuleAssessmentPattern(moduleCode);
+            return { g, cwPercent };
+          });
+
+          const results = await Promise.allSettled(fetchPromises);
+
+          results.forEach((res, index) => {
+            if (res.status === "fulfilled") {
+              const { g, cwPercent } = res.value;
+              const moduleCode = g.module || "???";
+              const overallGrade = overallGradeMap.get(moduleCode);
+              
+              validRows.push({
+                id: idCounter++,
+                module: moduleCode,
+                cwAvg:
+                  typeof g.grade === "number" && !Number.isNaN(g.grade)
+                    ? g.grade
+                    : NaN,
+                totalGrade: overallGrade !== undefined ? overallGrade : NaN,
+                examGrade: NaN,
+                cwPercent,
+              });
+            } else {
+              console.warn(
+                `Skipping module ${grades[index].module} due to assessment pattern fetch failure:`,
+                res.reason,
+              );
+            }
+          });
+
+          console.log(validRows);
+          setRows(validRows);
+          setIsLoading(false);
+        }
+      });
+  }, []);
 
   const updateRow = (
     id: number,
@@ -216,7 +251,7 @@ export function GradesTable() {
           </Table>
         </div>
 
-        <div className="flex justify-end pt-2">
+        <div className="flex justify-end pt-6">
           <Button
             onClick={handleCalculate}
             disabled={isLoading}

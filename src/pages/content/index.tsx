@@ -3,22 +3,22 @@ import { GradesTable } from "@src/components/GradesTable";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@src/components/ui/dialog";
 import { scrapeCourseworkLinksFromMySaint } from "@src/scripts/scrape_cw_grades";
+import { scrapeOverallModuleGrades } from "@src/scripts/scrape_module_grades";
 import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { runtime, storage } from "webextension-polyfill";
 import "./style.css";
-import { scrapeOverallModuleGrades } from "@src/scripts/scrape_module_grades";
 
 function ContentApp() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     const isMySaint = window.location.href.includes(
-      "https://mysaint.st-andrews.ac.uk/uPortal/f/my-courses/normal/render.uP",
+      "https://mysaint.st-andrews.ac.uk/",
     );
     if (!isMySaint) {
       return;
@@ -30,7 +30,7 @@ function ContentApp() {
       }
     };
 
-    chrome.runtime.onMessage.addListener(messageListener);
+    runtime.onMessage.addListener(messageListener);
 
     let observer: MutationObserver | null = null;
 
@@ -38,13 +38,13 @@ function ContentApp() {
       const overallGrades = scrapeOverallModuleGrades(document);
       if (Object.keys(overallGrades).length > 0) {
         console.log("Overall module grades:", overallGrades);
-        chrome.storage.local.set({ overallModuleGrades: overallGrades });
+        storage.local.set({ overallModuleGrades: overallGrades });
       }
     };
 
     const scrapeAndSend = () => {
       const links = scrapeCourseworkLinksFromMySaint(document);
-      chrome.runtime.sendMessage({ type: "SCRAPE_CW_GRADES", links });
+      runtime.sendMessage({ type: "SCRAPE_CW_GRADES", links });
     };
 
     scrapeAndStoreOverallGrades();
@@ -58,7 +58,7 @@ function ContentApp() {
 
     // Cleanup listener on unmount
     return () => {
-      chrome.runtime.onMessage.removeListener(messageListener);
+      runtime.onMessage.removeListener(messageListener);
       observer?.disconnect();
     };
   }, []);
@@ -69,9 +69,6 @@ function ContentApp() {
         <div className="sta-extension-wrapper">
           <DialogHeader>
             <DialogTitle>STA Exam Calculator</DialogTitle>
-            <DialogDescription>
-              Calculate your final grades directly on this page.
-            </DialogDescription>
           </DialogHeader>
           <GradesTable />
         </div>
@@ -93,3 +90,4 @@ const init = () => {
 };
 
 init();
+<ContentApp />;

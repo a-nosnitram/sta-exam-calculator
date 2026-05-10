@@ -29,8 +29,15 @@ export function scrapeCourseworkLinksFromMySaint(doc: Document): string[] {
       const isQuizLink = /\bquiz(?:zes)?\b/i.test(decodedHref);
       const isQuizLabel = /\bquiz(?:zes)?\b/i.test(label);
       const isStacsCheckLink = /\bstacs\s*check\b/i.test(decodedHref);
+      const isExcersice = /\bexcercises\b/i.test(decodedHref);
 
-      return isModuleLink && !isQuizLink && !isQuizLabel && !isStacsCheckLink;
+      return (
+        isModuleLink &&
+        !isQuizLink &&
+        !isQuizLabel &&
+        !isStacsCheckLink &&
+        !isExcersice
+      );
     })
     .map((anchor) => (anchor as HTMLAnchorElement).href);
 }
@@ -50,12 +57,17 @@ function parseCourseworkGradeFromText(html: string): number {
   const text = html.replace(/\s+/g, " ").trim();
   // "Running average: 16.5"
   const match = text.match(
-    /running\s*average:\s*(?::|=)?\s*(\d{1,3}(?:\.\d+)?)/i,
+    /running\s*average:\s*(?::|=)?\s*(\d{1,3}(?:\.\d+)?)\s*(%?)/i,
   );
   if (!match) {
     throw new Error("Failed to parse coursework grade from text", {
       cause: text,
     });
+  }
+  if (match[2] === "%") {
+    throw new Error(
+      "Failed to parse coursework grade from text because it's % and we don't calculate them yet",
+    );
   }
   return match ? Number.parseFloat(match[1]) : 0;
 }

@@ -1,50 +1,71 @@
 // src/pages/popup/Popup.tsx
 import { Button } from "@src/components/ui/button";
+import { useEffect, useState } from "react";
+import { tabs } from "webextension-polyfill";
+
+const TARGET_URL =
+  "https://mysaint.st-andrews.ac.uk/uPortal/f/my-courses/normal/render.uP";
 
 export default function Popup() {
-  const handleOpenDialog = async () => {
-    console.log("Button clicked, querying tabs...");
+  const [isCorrectPage, setIsCorrectPage] = useState<boolean | null>(null);
 
+  useEffect(() => {
+    tabs.query({ active: true, currentWindow: true }).then((activeTabs) => {
+      const activeTab = activeTabs[0];
+      setIsCorrectPage(activeTab?.url === TARGET_URL);
+    });
+  }, []);
+
+  const handleOpenDialog = async () => {
     try {
-      const [tab] = await chrome.tabs.query({
+      const [tab] = await tabs.query({
         active: true,
         currentWindow: true,
       });
 
-      if (!tab || !tab.id) {
-        console.error("No active tab found");
-        return;
+      if (!tab?.id) return;
+
+      try {
+        await tabs.sendMessage(tab.id, { action: "TOGGLE_STA_CALCULATOR" });
+      } catch (err) {
+        console.error(err);
       }
-
-      console.log("Sending message to tab ID:", tab.id);
-
-      // Add a callback to check for errors
-      chrome.tabs.sendMessage(
-        tab.id,
-        { action: "TOGGLE_STA_CALCULATOR" },
-        (response) => {
-          if (chrome.runtime.lastError) {
-            console.error(
-              "Message failed. Is the content script running on this page?",
-              chrome.runtime.lastError.message,
-            );
-          } else {
-            console.log("Message delivered successfully!");
-          }
-        },
-      );
     } catch (error) {
-      console.error("Tab query failed:", error);
+      console.error(error);
     }
   };
 
-  return (
-    <div className="p-4 w-64">
-      <h1 className="text-xl font-bold tracking-tight mb-4">STA Extension</h1>
+  const handleRedirect = () => {
+    tabs.create({ url: TARGET_URL });
+  };
 
-      <Button onClick={handleOpenDialog} className="w-full">
-        Calculate grades
-      </Button>
+  if (isCorrectPage === null) {
+    return (
+      <div className="p-4 w-64 flex items-center justify-center">
+        Loading...
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-72 p-6 flex flex-col items-center text-center">
+      <h1 className="text-2xl font-bold tracking-tight mb-6">STA Extension</h1>
+
+      {isCorrectPage ? (
+        <Button onClick={handleOpenDialog} className="w-full">
+          Calculate grades
+        </Button>
+      ) : (
+        <div className="flex flex-col items-center gap-4 w-full">
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-[220px]">
+            Go to there to calculate your exam grades.
+          </p>
+
+          <Button onClick={handleRedirect} className="w-full">
+            Go to MySaint/MyCourses
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
