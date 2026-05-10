@@ -1,4 +1,5 @@
 // src/pages/content/index.tsx
+import { GradesTable } from "@src/components/GradesTable";
 import {
   Dialog,
   DialogContent,
@@ -17,7 +18,6 @@ function ContentApp() {
     // Listen for the message from Popup.tsx
     const messageListener = (request: any) => {
       if (request.action === "TOGGLE_STA_CALCULATOR") {
-        alert("sadasdsad");
         setIsOpen(true);
       }
     };
@@ -37,12 +37,7 @@ function ContentApp() {
             Calculate your final grades directly on this page.
           </DialogDescription>
         </DialogHeader>
-
-        <div className="py-4">
-          <p className="text-sm text-muted-foreground">
-            Your calculator inputs and logic go here...
-          </p>
-        </div>
+        <GradesTable />
       </DialogContent>
     </Dialog>
   );
