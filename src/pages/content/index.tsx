@@ -17,6 +17,29 @@ function ContentApp() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
+    const colorSchemeQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const syncIconTheme = () => {
+      runtime
+        .sendMessage({
+          type: "SET_ICON_THEME",
+          isDark: colorSchemeQuery.matches,
+        })
+        .catch((error) => {
+          console.warn("Failed to sync icon theme with background script:", error);
+        });
+    };
+
+    syncIconTheme();
+
+    const onThemeChange = () => syncIconTheme();
+    colorSchemeQuery.addEventListener("change", onThemeChange);
+
+    return () => {
+      colorSchemeQuery.removeEventListener("change", onThemeChange);
+    };
+  }, []);
+
+  useEffect(() => {
     const isMySaint = window.location.href.includes(
       "https://mysaint.st-andrews.ac.uk/",
     );

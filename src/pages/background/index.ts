@@ -2,9 +2,31 @@ console.log("background script loaded");
 import { scrapeCourseworkGrade } from "@src/scripts/scrape_cw_grades";
 import { runtime, storage } from "webextension-polyfill";
 
+const DEFAULT_ICON_PATHS = {
+  32: "icon-32.png",
+  128: "icon-128.png",
+};
+
+const DARK_ICON_PATHS = {
+  32: "icon-white-32.png",
+  128: "icon-white-128.png",
+};
+
+function setActionIconByTheme(isDark: boolean) {
+  chrome.action.setIcon({
+    path: isDark ? DARK_ICON_PATHS : DEFAULT_ICON_PATHS,
+  });
+}
+
 // listen for messages from content scripts
 runtime.onMessage.addListener(async (request: any) => {
   console.log("Received message in background script:", request);
+
+  if (request.type === "SET_ICON_THEME") {
+    setActionIconByTheme(Boolean(request.isDark));
+    return { status: "success" };
+  }
+
   if (request.type === "SCRAPE_CW_GRADES") {
     // call the scrape function from scrape_cw_grades.ts
     const cwGrades: { module: string; grade: number; academicYear: string }[] =
