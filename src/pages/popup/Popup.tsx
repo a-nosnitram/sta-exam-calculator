@@ -1,6 +1,7 @@
 // src/pages/popup/Popup.tsx
 import { Button } from "@src/components/ui/button";
 import { useEffect, useState } from "react";
+import { tabs } from "webextension-polyfill";
 
 const TARGET_URL =
   "https://mysaint.st-andrews.ac.uk/uPortal/f/my-courses/normal/render.uP";
@@ -9,37 +10,33 @@ export default function Popup() {
   const [isCorrectPage, setIsCorrectPage] = useState<boolean | null>(null);
 
   useEffect(() => {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      const activeTab = tabs[0];
+    tabs.query({ active: true, currentWindow: true }).then((activeTabs) => {
+      const activeTab = activeTabs[0];
       setIsCorrectPage(activeTab?.url === TARGET_URL);
     });
   }, []);
 
   const handleOpenDialog = async () => {
     try {
-      const [tab] = await chrome.tabs.query({
+      const [tab] = await tabs.query({
         active: true,
         currentWindow: true,
       });
 
       if (!tab?.id) return;
 
-      chrome.tabs.sendMessage(
-        tab.id,
-        { action: "TOGGLE_STA_CALCULATOR" },
-        () => {
-          if (chrome.runtime.lastError) {
-            console.error(chrome.runtime.lastError.message);
-          }
-        },
-      );
+      try {
+        await tabs.sendMessage(tab.id, { action: "TOGGLE_STA_CALCULATOR" });
+      } catch (err) {
+        console.error(err);
+      }
     } catch (error) {
       console.error(error);
     }
   };
 
   const handleRedirect = () => {
-    chrome.tabs.create({ url: TARGET_URL });
+    tabs.create({ url: TARGET_URL });
   };
 
   if (isCorrectPage === null) {

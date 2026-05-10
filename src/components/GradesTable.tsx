@@ -12,6 +12,7 @@ import {
 } from "@src/components/ui/table";
 import { scrapeModuleAssessmentPattern } from "@src/scripts/scrape_percentages";
 import { useEffect, useState } from "react";
+import { storage } from "webextension-polyfill";
 
 export interface GradeRow {
   id: number;
@@ -59,7 +60,7 @@ export function GradesTable() {
   const [rows, setRows] = useState<GradeRow[]>([]);
 
   useEffect(() => {
-    chrome.storage.local.get("courseworkGrades", (result) => {
+    storage.local.get("courseworkGrades").then((result) => {
       const grades = result.courseworkGrades;
       if (Array.isArray(grades)) {
         const newRows: GradeRow[] = grades.map((g: any, index: number) => ({
