@@ -53,7 +53,6 @@ export function parseCourseworkGradeFromText(html: string): number {
     /running\s*average:\s*(?::|=)?\s*(\d{1,3}(?:\.\d+)?)/i,
   );
   if (!match) {
-    // console.error("Failed to parse coursework grade from text:", text);
     throw new Error("Failed to parse coursework grade from text", {
       cause: text,
     });
