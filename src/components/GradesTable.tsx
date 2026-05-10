@@ -17,11 +17,15 @@ import { storage } from "webextension-polyfill";
 export interface GradeRow {
   id: number;
   module: string;
+  academicYear?: string;
   cwAvg: number | string;
   totalGrade: number | string;
   examGrade: number;
   cwPercent?: number;
 }
+
+const getModuleYearKey = (module: string, academicYear?: string): string =>
+  `${module.trim().toUpperCase()}::${academicYear ?? ""}`;
 
 /**
  * returns Promise because scrapers return promises
@@ -44,6 +48,7 @@ export const calculateExamGrades = async (
       if (cwPercent === undefined) {
         const [_, fetchedCwPercent] = await scrapeModuleAssessmentPattern(
           row.module,
+          row.academicYear,
         );
         cwPercent = fetchedCwPercent;
       }
@@ -73,42 +78,55 @@ export function GradesTable() {
     storage.local
       .get(["courseworkGrades", "overallModuleGrades"])
       .then(async (result) => {
-        const grades = result.courseworkGrades;
-        const overallGrades = result.overallModuleGrades || [];
-        
+        const grades = Array.isArray(result.courseworkGrades)
+          ? result.courseworkGrades
+          : [];
+        const overallGrades = Array.isArray(result.overallModuleGrades)
+          ? result.overallModuleGrades
+          : [];
+
         // Create a lookup for overall grades by module code
         const overallGradeMap = new Map<string, number>();
-        if (Array.isArray(overallGrades)) {
-          overallGrades.forEach((og: any) => {
-            if (og.module && typeof og.grade === "number") {
-              overallGradeMap.set(og.module, og.grade);
-            }
-          });
-        }
+        overallGrades.forEach((og: any) => {
+          if (og.module && typeof og.grade === "number") {
+            const academicYear =
+              typeof og.academicYear === "string" ? og.academicYear : undefined;
+            overallGradeMap.set(
+              getModuleYearKey(og.module, academicYear),
+              og.grade,
+            );
+            // Fallback key for older stored records without year.
+            overallGradeMap.set(getModuleYearKey(og.module), og.grade);
+          }
+        });
 
-        if (Array.isArray(grades)) {
+        if (grades.length > 0) {
           setIsLoading(true);
           const validRows: GradeRow[] = [];
           let idCounter = 1;
 
           const fetchPromises = grades.map(async (g: any) => {
-            const moduleCode = g.module || "???";
-            const [examPercent, cwPercent] =
-              await scrapeModuleAssessmentPattern(moduleCode);
-            return { g, cwPercent };
+            const moduleCode = (g.module || "???").toUpperCase();
+            const academicYear =
+              typeof g.academicYear === "string" ? g.academicYear : undefined;
+            const [_, cwPercent] =
+              await scrapeModuleAssessmentPattern(moduleCode, academicYear);
+            return { g, moduleCode, academicYear, cwPercent };
           });
 
           const results = await Promise.allSettled(fetchPromises);
 
           results.forEach((res, index) => {
             if (res.status === "fulfilled") {
-              const { g, cwPercent } = res.value;
-              const moduleCode = g.module || "???";
-              const overallGrade = overallGradeMap.get(moduleCode);
-              
+              const { g, moduleCode, academicYear, cwPercent } = res.value;
+              const overallGrade =
+                overallGradeMap.get(getModuleYearKey(moduleCode, academicYear)) ??
+                overallGradeMap.get(getModuleYearKey(moduleCode));
+
               validRows.push({
                 id: idCounter++,
                 module: moduleCode,
+                academicYear,
                 cwAvg:
                   typeof g.grade === "number" && !Number.isNaN(g.grade)
                     ? g.grade
@@ -128,6 +146,8 @@ export function GradesTable() {
           console.log(validRows);
           setRows(validRows);
           setIsLoading(false);
+        } else {
+          setRows([]);
         }
       });
   }, []);

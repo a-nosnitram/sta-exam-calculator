@@ -31,8 +31,16 @@ function extractPercentageByLabel(
 // return a tuple of the form [exam, coursework] like [80, 20] for 80% exam and 20% coursework
 export async function scrapeModuleAssessmentPattern(
   moduleCode: string,
+  academicYear?: string,
 ): Promise<[number, number]> {
-  const targetUrl = `https://www.st-andrews.ac.uk/subjects/modules/catalogue/?meta_modulecode=${moduleCode}`;
+  const params = new URLSearchParams({
+    meta_modulecode: moduleCode,
+  });
+  if (academicYear) {
+    params.set("meta_ayrs_sand", academicYear);
+  }
+
+  const targetUrl = `https://www.st-andrews.ac.uk/subjects/modules/catalogue/?${params.toString()}`;
   const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
 
   const resp = await fetch(proxyUrl);

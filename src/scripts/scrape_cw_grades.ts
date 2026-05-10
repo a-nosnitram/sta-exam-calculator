@@ -6,6 +6,12 @@
     for each module, extract the coursework grade and store it in local storage
 */
 
+export interface CourseworkGrade {
+  module: string;
+  grade: number;
+  academicYear: string;
+}
+
 // content script for when user is on https://mysaint.st-andrews.ac.uk/uPortal/f/my-courses/normal/render.uP
 export function scrapeCourseworkLinksFromMySaint(doc: Document): string[] {
   return Array.from(
@@ -53,7 +59,7 @@ async function fetchCourseworkPage(url: string): Promise<string> {
   return await resp.text();
 }
 
-function parseCourseworkGradeFromText(html: string): number {
+export function parseCourseworkGradeFromText(html: string): number {
   const text = html.replace(/\s+/g, " ").trim();
   // "Running average: 16.5"
   const match = text.match(
@@ -74,16 +80,17 @@ function parseCourseworkGradeFromText(html: string): number {
 
 export async function scrapeCourseworkGrade(
   url: string,
-): Promise<[number, string] | null> {
+): Promise<CourseworkGrade | null> {
   const html = await fetchCourseworkPage(url);
   // https://mms.st-andrews.ac.uk/mms/module/2025_6/S2/CS3052/CS3052+Coursework/
-  const moduleCodeMatch = url.match(
-    /mms\.st-andrews\.ac\.uk\/mms\/module\/\d{4}_\d\/[sS]\d\/([a-zA-Z0-9]+)/i,
+  const moduleUrlMatch = url.match(
+    /mms\.st-andrews\.ac\.uk\/mms\/module\/(\d{4})_(\d+)\/[^/]+\/([^/]+)\//i,
   );
-  if (!moduleCodeMatch) {
-    throw new Error(`Failed to extract module code from URL: ${url}`);
+  if (!moduleUrlMatch) {
+    throw new Error(`Failed to extract module code/year from URL: ${url}`);
   }
-  const moduleCode = moduleCodeMatch[1].toUpperCase();
+  const academicYear = `${moduleUrlMatch[1]}/${moduleUrlMatch[2]}`;
+  const moduleCode = decodeURIComponent(moduleUrlMatch[3]).toUpperCase();
   const grade = parseCourseworkGradeFromText(html);
-  return [grade, moduleCode];
+  return { module: moduleCode, grade, academicYear };
 }

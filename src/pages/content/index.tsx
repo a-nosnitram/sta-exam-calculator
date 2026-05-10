@@ -36,10 +36,10 @@ function ContentApp() {
 
     const scrapeAndStoreOverallGrades = () => {
       const overallGrades = scrapeOverallModuleGrades(document);
-      if (Object.keys(overallGrades).length > 0) {
+      if (overallGrades.length > 0) {
         console.log("Overall module grades:", overallGrades);
-        storage.local.set({ overallModuleGrades: overallGrades });
       }
+      storage.local.set({ overallModuleGrades: overallGrades });
     };
 
     const scrapeAndSend = () => {
