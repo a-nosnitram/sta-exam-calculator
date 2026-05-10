@@ -67,49 +67,66 @@ export function GradesTable() {
   const [rows, setRows] = useState<GradeRow[]>([]);
 
   useEffect(() => {
-    storage.local.get("courseworkGrades").then(async (result) => {
-      const grades = result.courseworkGrades;
-      if (Array.isArray(grades)) {
-        setIsLoading(true);
-        const validRows: GradeRow[] = [];
-        let idCounter = 1;
+    storage.local
+      .get(["courseworkGrades", "overallModuleGrades"])
+      .then(async (result) => {
+        const grades = result.courseworkGrades;
+        const overallGrades = result.overallModuleGrades || [];
+        
+        // Create a lookup for overall grades by module code
+        const overallGradeMap = new Map<string, number>();
+        if (Array.isArray(overallGrades)) {
+          overallGrades.forEach((og: any) => {
+            if (og.module && typeof og.grade === "number") {
+              overallGradeMap.set(og.module, og.grade);
+            }
+          });
+        }
 
-        const fetchPromises = grades.map(async (g: any) => {
-          const moduleCode = g.module || "???";
-          const [examPercent, cwPercent] =
-            await scrapeModuleAssessmentPattern(moduleCode);
-          return { g, cwPercent };
-        });
+        if (Array.isArray(grades)) {
+          setIsLoading(true);
+          const validRows: GradeRow[] = [];
+          let idCounter = 1;
 
-        const results = await Promise.allSettled(fetchPromises);
+          const fetchPromises = grades.map(async (g: any) => {
+            const moduleCode = g.module || "???";
+            const [examPercent, cwPercent] =
+              await scrapeModuleAssessmentPattern(moduleCode);
+            return { g, cwPercent };
+          });
 
-        results.forEach((res, index) => {
-          if (res.status === "fulfilled") {
-            const { g, cwPercent } = res.value;
-            validRows.push({
-              id: idCounter++,
-              module: g.module || "???",
-              cwAvg:
-                typeof g.grade === "number" && !Number.isNaN(g.grade)
-                  ? g.grade
-                  : NaN,
-              totalGrade: NaN,
-              examGrade: NaN,
-              cwPercent,
-            });
-          } else {
-            console.warn(
-              `Skipping module ${grades[index].module} due to assessment pattern fetch failure:`,
-              res.reason,
-            );
-          }
-        });
+          const results = await Promise.allSettled(fetchPromises);
 
-        console.log(validRows);
-        setRows(validRows);
-        setIsLoading(false);
-      }
-    });
+          results.forEach((res, index) => {
+            if (res.status === "fulfilled") {
+              const { g, cwPercent } = res.value;
+              const moduleCode = g.module || "???";
+              const overallGrade = overallGradeMap.get(moduleCode);
+              
+              validRows.push({
+                id: idCounter++,
+                module: moduleCode,
+                cwAvg:
+                  typeof g.grade === "number" && !Number.isNaN(g.grade)
+                    ? g.grade
+                    : NaN,
+                totalGrade: overallGrade !== undefined ? overallGrade : NaN,
+                examGrade: NaN,
+                cwPercent,
+              });
+            } else {
+              console.warn(
+                `Skipping module ${grades[index].module} due to assessment pattern fetch failure:`,
+                res.reason,
+              );
+            }
+          });
+
+          console.log(validRows);
+          setRows(validRows);
+          setIsLoading(false);
+        }
+      });
   }, []);
 
   const updateRow = (
