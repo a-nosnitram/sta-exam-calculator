@@ -4,3 +4,8 @@ build/
 .env
 .DS_Store
 *.log
+dist_chrome/
+dist_firefox/
+dist_edge/
+dist_opera/
+dist_safari/
