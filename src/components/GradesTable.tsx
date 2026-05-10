@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@src/components/ui/table";
 import { scrapeModuleAssessmentPattern } from "@src/scripts/scrape_percentages";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export interface GradeRow {
   id: number;
@@ -56,43 +56,28 @@ export const calculateExamGrades = async (
 
 export function GradesTable() {
   const [isLoading, setIsLoading] = useState(false);
-  const [rows, setRows] = useState<GradeRow[]>([
-    {
-      id: 1,
-      module: "CS3102",
-      cwAvg: 16,
-      totalGrade: 17,
-      examGrade: NaN,
-    },
-    {
-      id: 2,
-      module: "CS3102",
-      cwAvg: 16,
-      totalGrade: 17,
-      examGrade: NaN,
-    },
-    {
-      id: 3,
-      module: "CS3102",
-      cwAvg: 16,
-      totalGrade: 17,
-      examGrade: NaN,
-    },
-    {
-      id: 4,
-      module: "CS3102",
-      cwAvg: 16,
-      totalGrade: 17,
-      examGrade: NaN,
-    },
-    {
-      id: 5,
-      module: "CS3102",
-      cwAvg: 16,
-      totalGrade: 17,
-      examGrade: NaN,
-    },
-  ]);
+  const [rows, setRows] = useState<GradeRow[]>([]);
+
+  useEffect(() => {
+    chrome.storage.local.get("courseworkGrades", (result) => {
+      const grades = result.courseworkGrades;
+      if (Array.isArray(grades)) {
+        const newRows: GradeRow[] = grades.map((g: any, index: number) => ({
+          id: index + 1,
+          module: g.module || "???",
+          cwAvg:
+            typeof g.grade === "number" && !Number.isNaN(g.grade)
+              ? g.grade
+              : NaN,
+          totalGrade: NaN,
+          examGrade: NaN,
+        }));
+        console.log(newRows);
+
+        setRows(newRows);
+      }
+    });
+  }, []);
 
   const updateRow = (
     id: number,

@@ -16,11 +16,10 @@ function ContentApp() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    const TARGET_URL =
-      "https://mysaint.st-andrews.ac.uk/uPortal/f/my-courses/normal/render.uP";
-    const isCorrectPage = window.location.href === TARGET_URL;
-
-    if (!isCorrectPage) {
+    const isMySaint = window.location.href.includes(
+      "https://mysaint.st-andrews.ac.uk/",
+    );
+    if (!isMySaint) {
       return;
     }
     // Listen for the message from Popup.tsx
