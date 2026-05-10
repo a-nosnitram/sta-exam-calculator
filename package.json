@@ -17,6 +17,9 @@
   },
   "type": "module",
   "dependencies": {
+    "@types/jsdom": "^28.0.1",
+    "jsdom": "^29.1.1",
+    "node-fetch": "^3.3.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "webextension-polyfill": "^0.12.0"
