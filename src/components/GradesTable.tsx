@@ -10,53 +10,52 @@ import {
   TableHeader,
   TableRow,
 } from "@src/components/ui/table";
+import { scrapeModuleAssessmentPattern } from "@src/scripts/scrape_percentages";
 import { useState } from "react";
 
 export interface GradeRow {
   id: number;
   module: string;
-  cwPercent: number;
   cwAvg: number;
   totalGrade: number;
   examGrade: number;
 }
 
-export const calculateExamGrades = (rows: GradeRow[]): GradeRow[] => {
-  return rows.map((row) => {
-    if (
-      Number.isNaN(row.cwPercent) ||
-      Number.isNaN(row.cwAvg) ||
-      Number.isNaN(row.totalGrade)
-    ) {
-      return { ...row, examGrade: -1 };
-    }
+// Update the signature to be async and return a Promise
+export const calculateExamGrades = async (
+  rows: GradeRow[],
+): Promise<GradeRow[]> => {
+  return Promise.all(
+    rows.map(async (row) => {
+      if (Number.isNaN(row.cwAvg) || Number.isNaN(row.totalGrade)) {
+        return { ...row, examGrade: -1 };
+      }
 
-    if (row.cwPercent === 0 || row.cwAvg === 0 || row.totalGrade === 0) {
-      return { ...row, examGrade: -2 };
-    }
+      const [_, cwPercent] = await scrapeModuleAssessmentPattern(row.module);
 
-    const cwWeight = row.cwPercent / 100;
-    const exWeight = 1 - cwWeight;
+      const cwWeight = cwPercent / 100;
+      const exWeight = 1 - cwWeight;
 
-    if (exWeight <= 0) {
-      return { ...row, examGrade: 0 };
-    }
+      if (exWeight <= 0) {
+        return { ...row, examGrade: 0 };
+      }
 
-    const calculatedExam = (row.totalGrade - row.cwAvg * cwWeight) / exWeight;
+      const calculatedExam = (row.totalGrade - row.cwAvg * cwWeight) / exWeight;
 
-    return {
-      ...row,
-      examGrade: Number((Math.round(calculatedExam * 100) / 100).toFixed(2)),
-    };
-  });
+      return {
+        ...row,
+        examGrade: Number((Math.round(calculatedExam * 100) / 100).toFixed(2)),
+      };
+    }),
+  );
 };
 
 export function GradesTable() {
+  const [isLoading, setIsLoading] = useState(false);
   const [rows, setRows] = useState<GradeRow[]>([
     {
       id: 1,
       module: "CS3102",
-      cwPercent: 60,
       cwAvg: 16,
       totalGrade: 17,
       examGrade: NaN,
@@ -64,7 +63,6 @@ export function GradesTable() {
     {
       id: 2,
       module: "CS3102",
-      cwPercent: 60,
       cwAvg: 16,
       totalGrade: 17,
       examGrade: NaN,
@@ -72,7 +70,6 @@ export function GradesTable() {
     {
       id: 3,
       module: "CS3102",
-      cwPercent: 60,
       cwAvg: 16,
       totalGrade: 17,
       examGrade: NaN,
@@ -91,8 +88,17 @@ export function GradesTable() {
     );
   };
 
-  const handleCalculate = () => {
-    setRows(calculateExamGrades(rows));
+  const handleCalculate = async () => {
+    setIsLoading(true);
+    try {
+      const calculatedRows = await calculateExamGrades(rows);
+      setRows(calculatedRows);
+    } catch (error) {
+      console.error("Failed to fetch assessment patterns:", error);
+      alert("Check the console! Likely a CORS or Network error.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const isInvalid = (val: number) => Number.isNaN(val) || val === 0;
@@ -107,9 +113,6 @@ export function GradesTable() {
           <TableRow className="border-b! border-border! bg-transparent! hover:bg-transparent!">
             <TableHead className="bg-transparent! text-primary-foreground! font-medium! p-2! border-none!">
               Module
-            </TableHead>
-            <TableHead className="bg-transparent! text-primary-foreground! font-medium! p-2! border-none!">
-              CW %
             </TableHead>
             <TableHead className="bg-transparent! text-primary-foreground! font-medium! p-2! border-none!">
               CW Avg
@@ -135,19 +138,6 @@ export function GradesTable() {
                   onChange={(e) => updateRow(row.id, "module", e.target.value)}
                   className="w-24 bg-background! border! border-input! rounded-md! px-3! py-1! h-9! m-0! shadow-none! text-foreground!"
                   placeholder="???"
-                />
-              </TableCell>
-              <TableCell className="pr-2! border-none!">
-                <Input
-                  value={Number.isNaN(row.cwPercent) ? "" : row.cwPercent}
-                  onChange={(e) =>
-                    updateRow(
-                      row.id,
-                      "cwPercent",
-                      e.target.value === "" ? NaN : Number(e.target.value),
-                    )
-                  }
-                  className={`w-20 bg-background! border! border-input! rounded-md! px-3! py-1! h-9! m-0! shadow-none! text-foreground! ${isInvalid(row.cwPercent) ? errorClasses : ""}`}
                 />
               </TableCell>
               <TableCell className="pr-2! border-none!">
@@ -181,14 +171,8 @@ export function GradesTable() {
                   <span className="text-destructive text-xs">
                     Values required
                   </span>
-                ) : row.examGrade === -2 ? (
-                  <span className="text-destructive text-xs font-bold">
-                    0, really???
-                  </span>
                 ) : !Number.isNaN(row.examGrade) ? (
-                  <span className="text-black! font-bold!">
-                    {row.examGrade}
-                  </span>
+                  <span className="text-black! font-bold">{row.examGrade}</span>
                 ) : (
                   <span className="text-muted-foreground">-</span>
                 )}
@@ -201,9 +185,10 @@ export function GradesTable() {
       <div className="flex justify-end pt-2">
         <Button
           onClick={handleCalculate}
+          disabled={isLoading}
           className="text-white! rounded-md! px-4! py-2! h-9! shadow-none! border-none! bg-primary! hover:bg-primary/90!"
         >
-          Calculate
+          {isLoading ? "Calculating..." : "Calculate"}
         </Button>
       </div>
     </div>

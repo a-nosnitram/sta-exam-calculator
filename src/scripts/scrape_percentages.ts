@@ -1,9 +1,6 @@
 // scrape https://www.st-andrews.ac.uk/subjects/modules/catalogue/?meta_modulecode=AH1001 given a module code
 // find the "Assessment pattern" (<h2>Assessment pattern</h2>) section, extract the content
 
-import { JSDOM } from "jsdom";
-import fetch from "node-fetch";
-
 function extractPercentageByLabel(
   text: string,
   labelPattern: string,
@@ -35,22 +32,21 @@ function extractPercentageByLabel(
 export async function scrapeModuleAssessmentPattern(
   moduleCode: string,
 ): Promise<[number, number]> {
-  const url = `https://www.st-andrews.ac.uk/subjects/modules/catalogue/?meta_modulecode=${moduleCode}`;
-  const resp = await fetch(url);
+  const targetUrl = `https://www.st-andrews.ac.uk/subjects/modules/catalogue/?meta_modulecode=${moduleCode}`;
+  const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+
+  const resp = await fetch(proxyUrl);
+
+  if (!resp.ok) throw new Error("Failed to fetch module data");
+
   const html = await resp.text();
 
-  const dom = new JSDOM(html);
-  const document = dom.window.document;
+  const parser = new DOMParser();
+  const document = parser.parseFromString(html, "text/html");
 
   const assessmentPatternHeading = Array.from(
-    document
-      .querySelectorAll("h2")
-      .values()
-      .filter(
-        (h: { textContent: string }) =>
-          h.textContent?.trim() === "Assessment pattern",
-      ),
-  )[0];
+    document.querySelectorAll("h2"),
+  ).find((h) => h.textContent?.trim() === "Assessment pattern");
 
   // assessment header is an h2, then there is
   // a div with class 'alternate-rows'
@@ -66,7 +62,7 @@ export async function scrapeModuleAssessmentPattern(
   const assessmentPatternContent = assessmentPatternHeading.nextElementSibling;
 
   if (
-    !(assessmentPatternContent instanceof dom.window.Element) ||
+    !assessmentPatternContent ||
     !assessmentPatternContent.classList.contains("alternate-rows")
   ) {
     throw new Error(
