@@ -17,8 +17,8 @@ import { storage } from "webextension-polyfill";
 export interface GradeRow {
   id: number;
   module: string;
-  cwAvg: number;
-  totalGrade: number;
+  cwAvg: number | string;
+  totalGrade: number | string;
   examGrade: number;
   cwPercent?: number;
 }
@@ -33,7 +33,10 @@ export const calculateExamGrades = async (
 ): Promise<GradeRow[]> => {
   return Promise.all(
     rows.map(async (row) => {
-      if (Number.isNaN(row.cwAvg) || Number.isNaN(row.totalGrade)) {
+      const cwAvgNum = typeof row.cwAvg === "string" ? Number.parseFloat(row.cwAvg) : row.cwAvg;
+      const totalGradeNum = typeof row.totalGrade === "string" ? Number.parseFloat(row.totalGrade) : row.totalGrade;
+
+      if (Number.isNaN(cwAvgNum) || Number.isNaN(totalGradeNum)) {
         return { ...row, examGrade: -1 };
       }
 
@@ -52,7 +55,7 @@ export const calculateExamGrades = async (
         return { ...row, examGrade: 0 };
       }
 
-      const calculatedExam = (row.totalGrade - row.cwAvg * cwWeight) / exWeight;
+      const calculatedExam = (totalGradeNum - cwAvgNum * cwWeight) / exWeight;
 
       return {
         ...row,
@@ -109,8 +112,8 @@ export function GradesTable() {
                 cwAvg:
                   typeof g.grade === "number" && !Number.isNaN(g.grade)
                     ? g.grade
-                    : NaN,
-                totalGrade: overallGrade !== undefined ? overallGrade : NaN,
+                    : "",
+                totalGrade: overallGrade !== undefined ? overallGrade : "",
                 examGrade: NaN,
                 cwPercent,
               });
@@ -154,7 +157,10 @@ export function GradesTable() {
     }
   };
 
-  const isInvalid = (val: number) => Number.isNaN(val) || val === 0;
+  const isInvalid = (val: number | string) => {
+    const num = typeof val === "string" ? Number.parseFloat(val) : val;
+    return Number.isNaN(num) || num === 0;
+  };
 
   const errorClasses =
     "border-red-500 bg-red-50 text-red-900 focus-visible:ring-red-500 dark:bg-red-950/50 dark:text-red-200";
@@ -202,15 +208,9 @@ export function GradesTable() {
 
                   <TableCell className="px-1 border-none!">
                     <Input
-                      value={Number.isNaN(row.cwAvg) ? "" : row.cwAvg}
+                      value={row.cwAvg}
                       onChange={(e) =>
-                        updateRow(
-                          row.id,
-
-                          "cwAvg",
-
-                          e.target.value === "" ? NaN : Number(e.target.value),
-                        )
+                        updateRow(row.id, "cwAvg", e.target.value)
                       }
                       className={`w-16 bg-background! border! border-input! rounded-md! px-3! py-1! h-9! m-0! shadow-none! text-foreground! ${isInvalid(row.cwAvg) ? errorClasses : ""}`}
                     />
@@ -218,15 +218,9 @@ export function GradesTable() {
 
                   <TableCell className="px-1 border-none!">
                     <Input
-                      value={Number.isNaN(row.totalGrade) ? "" : row.totalGrade}
+                      value={row.totalGrade}
                       onChange={(e) =>
-                        updateRow(
-                          row.id,
-
-                          "totalGrade",
-
-                          e.target.value === "" ? NaN : Number(e.target.value),
-                        )
+                        updateRow(row.id, "totalGrade", e.target.value)
                       }
                       className={`w-16 bg-background! border! border-input! rounded-md! px-3! py-1! h-9! m-0! shadow-none! text-foreground! ${isInvalid(row.totalGrade) ? errorClasses : ""}`}
                     />
