@@ -1,4 +1,5 @@
 // src/pages/content/index.tsx
+import { CorsError } from "@src/components/CorsError";
 import { GradesTable } from "@src/components/GradesTable";
 import {
   Dialog,
@@ -15,6 +16,17 @@ import "./style.css";
 
 function ContentApp() {
   const [isOpen, setIsOpen] = useState(false);
+  const [authError, setAuthError] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      storage.local.get("authError").then((result) => {
+        setAuthError(!!result.authError);
+      });
+    }
+  }, [isOpen]);
+
+  console.log(authError);
 
   useEffect(() => {
     const colorSchemeQuery = window.matchMedia("(prefers-color-scheme: dark)");
@@ -25,7 +37,10 @@ function ContentApp() {
           isDark: colorSchemeQuery.matches,
         })
         .catch((error) => {
-          console.warn("Failed to sync icon theme with background script:", error);
+          console.warn(
+            "Failed to sync icon theme with background script:",
+            error,
+          );
         });
     };
 
@@ -93,7 +108,7 @@ function ContentApp() {
           <DialogHeader>
             <DialogTitle>MMS Calc</DialogTitle>
           </DialogHeader>
-          <GradesTable />
+          {authError ? <CorsError /> : <GradesTable />}
         </div>
       </DialogContent>{" "}
     </Dialog>

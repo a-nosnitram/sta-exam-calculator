@@ -37,6 +37,8 @@ runtime.onMessage.addListener(async (request: any) => {
       return { status: "success", skipped: true };
     }
 
+    let authError = false;
+
     for (const link of request.links) {
       console.log(`Scraping coursework grade from link: ${link}`);
       try {
@@ -46,10 +48,20 @@ runtime.onMessage.addListener(async (request: any) => {
         }
       } catch (error) {
         console.error(`Failed to scrape coursework grade from ${link}:`, error);
+        // Detect 302 redirects or NetworkErrors (often CORS issues when redirecting to login)
+        if (
+          error instanceof TypeError ||
+          (error instanceof Error && error.message.includes("302"))
+        ) {
+          authError = true;
+        }
       }
     }
     // store the grades in local storage with the module code as the key and the grade as the value
-    await storage.local.set({ courseworkGrades: cwGrades });
+    await storage.local.set({
+      courseworkGrades: cwGrades,
+      authError: authError,
+    });
     return { status: "success" };
   }
 });

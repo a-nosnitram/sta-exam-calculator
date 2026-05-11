@@ -7,7 +7,7 @@ import {
 function printUsage() {
   console.log("Usage:");
   console.log("  bun run test:scrape-cw");
-  console.log("  bun run test:scrape-cw --sample \"Running average: 16.5\"");
+  console.log('  bun run test:scrape-cw --sample "Running average: 16.5"');
   console.log("  bun run test:scrape-cw --file ./path/to/coursework-page.html");
   console.log(
     "  bun run test:scrape-cw --url https://mms.st-andrews.ac.uk/mms/module/...",

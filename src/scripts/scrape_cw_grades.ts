@@ -80,7 +80,7 @@ export function parseCourseworkGradeFromText(html: string): number {
 
 export async function scrapeCourseworkGrade(
   url: string,
-): Promise<CourseworkGrade | null> {
+): Promise<CourseworkGrade> {
   const html = await fetchCourseworkPage(url);
   // https://mms.st-andrews.ac.uk/mms/module/2025_6/S2/CS3052/CS3052+Coursework/
   const moduleUrlMatch = url.match(
