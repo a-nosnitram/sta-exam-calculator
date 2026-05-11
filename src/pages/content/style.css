@@ -34,6 +34,25 @@
   margin-top: 1rem !important;
 }
 
+.sta-extension-wrapper table.sta-grades-table {
+  margin-top: 0 !important;
+  table-layout: fixed !important;
+}
+
+.sta-extension-wrapper .sta-grades-header {
+  display: grid;
+  grid-template-columns: 6rem 5rem 5rem 5rem minmax(7rem, 1fr);
+  align-items: center;
+  height: 2.5rem;
+  padding: 0 0.5rem;
+  color: hsl(var(--muted-foreground)) !important;
+  font-weight: 500 !important;
+  background: hsl(var(--background) / 0.74) !important;
+  backdrop-filter: saturate(150%) blur(14px) !important;
+  -webkit-backdrop-filter: saturate(150%) blur(14px) !important;
+  border: none !important;
+}
+
 .sta-extension-wrapper tr {
   display: table-row !important;
   border-bottom: 1px solid hsl(var(--border)) !important;

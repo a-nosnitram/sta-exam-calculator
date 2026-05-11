@@ -6,8 +6,6 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
-  TableHeader,
   TableRow,
 } from "@src/components/ui/table";
 import { scrapeModuleAssessmentPattern } from "@src/scripts/scrape_percentages";
@@ -37,14 +35,23 @@ export const calculateExamGrades = async (
 ): Promise<GradeRow[]> => {
   return Promise.all(
     rows.map(async (row) => {
-      const cwAvgNum = typeof row.cwAvg === "string" ? Number.parseFloat(row.cwAvg) : row.cwAvg;
-      const totalGradeNum = typeof row.totalGrade === "string" ? Number.parseFloat(row.totalGrade) : row.totalGrade;
+      const cwAvgNum =
+        typeof row.cwAvg === "string"
+          ? Number.parseFloat(row.cwAvg)
+          : row.cwAvg;
+      const totalGradeNum =
+        typeof row.totalGrade === "string"
+          ? Number.parseFloat(row.totalGrade)
+          : row.totalGrade;
 
       if (Number.isNaN(cwAvgNum) || Number.isNaN(totalGradeNum)) {
         return { ...row, examGrade: -1 };
       }
 
-      let cwPercentNum = typeof row.cwPercent === "string" ? Number.parseFloat(row.cwPercent) : row.cwPercent;
+      let cwPercentNum =
+        typeof row.cwPercent === "string"
+          ? Number.parseFloat(row.cwPercent)
+          : row.cwPercent;
       if (cwPercentNum === undefined || Number.isNaN(cwPercentNum)) {
         try {
           const [_, fetchedCwPercent] = await scrapeModuleAssessmentPattern(
@@ -53,7 +60,10 @@ export const calculateExamGrades = async (
           );
           cwPercentNum = fetchedCwPercent;
         } catch (err) {
-          console.warn(`Could not fetch assessment pattern for ${row.module} during calculation`, err);
+          console.warn(
+            `Could not fetch assessment pattern for ${row.module} during calculation`,
+            err,
+          );
         }
       }
 
@@ -118,15 +128,21 @@ export function GradesTable() {
             const moduleCode = (g.module || "???").toUpperCase();
             const academicYear =
               typeof g.academicYear === "string" ? g.academicYear : undefined;
-            
+
             let cwPercent: number | undefined = undefined;
             try {
-              const [_, fetchedCwPercent] = await scrapeModuleAssessmentPattern(moduleCode, academicYear);
+              const [_, fetchedCwPercent] = await scrapeModuleAssessmentPattern(
+                moduleCode,
+                academicYear,
+              );
               cwPercent = fetchedCwPercent;
             } catch (err) {
-              console.warn(`Could not fetch assessment pattern for ${moduleCode}`, err);
+              console.warn(
+                `Could not fetch assessment pattern for ${moduleCode}`,
+                err,
+              );
             }
-            
+
             return { g, moduleCode, academicYear, cwPercent };
           });
 
@@ -136,8 +152,9 @@ export function GradesTable() {
             if (res.status === "fulfilled") {
               const { g, moduleCode, academicYear, cwPercent } = res.value;
               const overallGrade =
-                overallGradeMap.get(getModuleYearKey(moduleCode, academicYear)) ??
-                overallGradeMap.get(getModuleYearKey(moduleCode));
+                overallGradeMap.get(
+                  getModuleYearKey(moduleCode, academicYear),
+                ) ?? overallGradeMap.get(getModuleYearKey(moduleCode));
 
               validRows.push({
                 id: idCounter++,
@@ -203,31 +220,23 @@ export function GradesTable() {
 
   return (
     <div className="space-y-4 m-0!">
-      {/* 1. Added a scrollable wrapper with a max-height */}
       <div className="px-8">
-        <div className="max-h-[280px] overflow-y-auto overflow-x-hidden rounded-md ">
-          <Table className="border-none!">
-            {/* 2. Added sticky top-0 to keep header visible */}
-            <TableHeader className="bg-background! sticky top-0 z-10 shadow-sm">
-              <TableRow className="border-b! border-border! bg-background! hover:bg-transparent!">
-                <TableHead className="bg-transparent! text-primary-foreground! font-medium! border-none!">
-                  Module
-                </TableHead>
-                <TableHead className="bg-transparent! text-primary-foreground! font-medium! border-none!">
-                  CW %
-                </TableHead>
-                <TableHead className="bg-transparent! text-primary-foreground! font-medium! border-none!">
-                  CW Avg
-                </TableHead>
-                <TableHead className="bg-transparent! text-primary-foreground! font-medium! border-none!">
-                  Total Grade
-                </TableHead>
-                <TableHead className="bg-transparent! text-primary-foreground! font-medium! border-none! text-right whitespace-nowrap">
-                  Exam (Calc)
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-
+        <div className="sta-grades-header">
+          <span className="w-24">Module</span>
+          <span>CW %</span>
+          <span>CW Avg</span>
+          <span>Total Grade</span>
+          <span className="text-right">Exam (Calc)</span>
+        </div>
+        <div className="max-h-[280px] overflow-y-auto overflow-x-hidden rounded-md">
+          <Table className="sta-grades-table border-none!">
+            <colgroup>
+              <col style={{ width: "6rem" }} />
+              <col style={{ width: "5rem" }} />
+              <col style={{ width: "5rem" }} />
+              <col style={{ width: "5rem" }} />
+              <col />
+            </colgroup>
             <TableBody className="border-none!">
               {rows.map((row) => (
                 <TableRow
