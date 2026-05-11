@@ -35,14 +35,14 @@ export function scrapeCourseworkLinksFromMySaint(doc: Document): string[] {
       const isQuizLink = /\bquiz(?:zes)?\b/i.test(decodedHref);
       const isQuizLabel = /\bquiz(?:zes)?\b/i.test(label);
       const isStacsCheckLink = /\bstacs\s*check\b/i.test(decodedHref);
-      const isExcersice = /\bexcercises\b/i.test(decodedHref);
+      const isExercise = /\bexercises?\b/i.test(decodedHref);
 
       return (
         isModuleLink &&
         !isQuizLink &&
         !isQuizLabel &&
         !isStacsCheckLink &&
-        !isExcersice
+        !isExercise
       );
     })
     .map((anchor) => (anchor as HTMLAnchorElement).href);
