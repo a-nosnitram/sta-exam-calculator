@@ -1,5 +1,6 @@
 // src/pages/popup/Popup.tsx
 import { Button } from "@src/components/ui/button";
+import { Bug } from "lucide-react";
 import { useEffect, useState } from "react";
 import { tabs } from "webextension-polyfill";
 
@@ -59,19 +60,37 @@ export default function Popup() {
   }
 
   return (
-    <div className="w-72 min-h-[240px] p-6 flex flex-col items-center justify-center text-center">
-      <h1 className="text-2xl font-bold tracking-tight mb-6">MMS Calc</h1>
+    <div className="w-72 min-h-[240px] pl-8 px-4 flex flex-col items-center justify-center text-center relative">
+      <div className="absolute bottom-0 left-0 w-full pl-3 flex justify-between items-center">
+        <a
+          href="https://github.com/a-nosnitram/sta-exam-calculator/issues/new"
+          target="_blank"
+          rel="noreferrer"
+          className="text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <Bug className="size-5" />
+        </a>
+        <a
+          href="https://github.com/a-nosnitram/sta-exam-calculator"
+          target="_blank"
+          rel="noreferrer"
+          className="text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <img
+            src="/GitHub_Invertocat_Black.svg"
+            alt="GitHub"
+            className="size-5 opacity-50 hover:opacity-100 transition-opacity"
+          />
+        </a>
+      </div>
+      <h1 className="text-2xl font-bold tracking-tight mb-6">MMS Calc </h1>
 
       {isCorrectPage ? (
         <Button onClick={handleOpenDialog} className="w-full">
           Calculate grades
         </Button>
       ) : (
-        <div className="flex flex-col items-center gap-4 w-full">
-          <p className="text-sm text-muted-foreground leading-relaxed max-w-[220px]">
-            Go there to calculate your exam grades.
-          </p>
-
+        <div className="flex flex-col items-center w-full">
           <Button onClick={handleRedirect} className="w-full">
             Go to MySaint/MyCourses
           </Button>

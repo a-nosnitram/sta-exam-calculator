@@ -7,10 +7,17 @@
 
 @theme {
     --animate-spin-slow: spin 20s linear infinite;
+    --animate-spin-ccw: spin-ccw 1s linear infinite;
 
     @keyframes spin {
         to {
             transform: rotate(360deg);
+        }
+    }
+
+    @keyframes spin-ccw {
+        to {
+            transform: rotate(-360deg);
         }
     }
 }
