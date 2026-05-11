@@ -14,7 +14,7 @@ export function CorsError() {
     runtime.sendMessage({ type: "SCRAPE_CW_GRADES", links }).finally(() => {
       // Background script finishes quickly, but let's keep it loading
       // until the storage listener in index.tsx unmounts us if successful.
-      setTimeout(() => setIsLoading(false), 2000);
+      setIsLoading(false);
     });
   };
 
