@@ -24,7 +24,7 @@ export function CorsError() {
         You're probably logged out of MMS.
       </p>
       <div className="flex gap-2">
-        <Button disabled={isLoading}>
+        <Button>
           <a
             href="https://mms.st-andrews.ac.uk/mms/"
             target="_blank"
