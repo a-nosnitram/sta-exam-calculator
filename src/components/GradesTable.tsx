@@ -231,7 +231,7 @@ export function GradesTable() {
           <span className="text-right">Exam (Calc)</span>
         </div>
         <div className="sta-grades-scroll-shell">
-          <div className="sta-grades-scroll max-h-[280px] overflow-y-auto overflow-x-hidden">
+          <div className="sta-grades-scroll max-h-70 overflow-y-auto overflow-x-hidden">
             <Table className="sta-grades-table border-none!">
               <colgroup>
                 <col style={{ width: "6rem" }} />

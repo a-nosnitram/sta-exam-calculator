@@ -115,10 +115,13 @@ function ContentApp() {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-[700px] bg-background/80 backdrop-blur-xl border-border/50">
+      <DialogContent className="sm:max-w-xl bg-background/80 backdrop-blur-xl border-border/50">
         <div className="sta-extension-wrapper">
           <DialogHeader>
-            <DialogTitle>MMS Calc</DialogTitle>
+            <DialogTitle className="font-normal">
+              <span className="font-semibold">MMS</span>
+              <span className="font-normal">Calc</span>
+            </DialogTitle>
           </DialogHeader>
           {authError ? <CorsError /> : <GradesTable />}
         </div>
