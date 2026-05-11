@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
 /* 1. Define Variables */
 #sta-calculator-extension-root,
