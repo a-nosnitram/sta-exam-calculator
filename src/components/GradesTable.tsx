@@ -31,6 +31,7 @@ const getModuleYearKey = (module: string, academicYear?: string): string =>
  * returns Promise because scrapers return promises
  *
  * updates the all examGrades field in GradeRow array
+ * examGrade is gonna be set to -1 if cwAvgNum or totalGradeNum are missing
  */
 export const calculateExamGrades = async (
   rows: GradeRow[],
@@ -83,6 +84,7 @@ export function GradesTable() {
   const [isLoading, setIsLoading] = useState(false);
   const [rows, setRows] = useState<GradeRow[]>([]);
 
+  // FIXME: beeg super couple logic block. needs decoupling
   useEffect(() => {
     storage.local
       .get(["courseworkGrades", "overallModuleGrades"])
