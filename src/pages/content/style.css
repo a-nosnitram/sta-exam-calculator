@@ -1,5 +1,18 @@
 @import "tailwindcss";
 
+@theme {
+  --animate-spin-ccw: spin-ccw 1s linear infinite;
+
+  @keyframes spin-ccw {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(-360deg);
+    }
+  }
+}
+
 /* 1. Define Variables */
 #sta-calculator-extension-root,
 [data-radix-portal] {
