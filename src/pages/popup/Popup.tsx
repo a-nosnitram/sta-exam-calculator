@@ -60,7 +60,7 @@ export default function Popup() {
 
   return (
     <div className="w-72 min-h-[240px] p-6 flex flex-col items-center justify-center text-center">
-      <h1 className="text-2xl font-bold tracking-tight mb-6">STA Extension</h1>
+      <h1 className="text-2xl font-bold tracking-tight mb-6">MMS Calc</h1>
 
       {isCorrectPage ? (
         <Button onClick={handleOpenDialog} className="w-full">
