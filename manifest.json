@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "name in manifest.json",
-  "description": "description in manifest.json",
+  "name": "MMS Calc",
+  "description": "Calculate your exam grades based on coursework average, exam/coursework weighting, and overall module grade.",
   "options_ui": {
     "page": "src/pages/options/index.html"
   },
