@@ -19,11 +19,23 @@ function ContentApp() {
   const [authError, setAuthError] = useState(false);
 
   useEffect(() => {
+    const checkAuth = async () => {
+      const result = await storage.local.get("authError");
+      setAuthError(!!result.authError);
+    };
+
     if (isOpen) {
-      storage.local.get("authError").then((result) => {
-        setAuthError(!!result.authError);
-      });
+      checkAuth();
     }
+
+    const listener = (changes: any) => {
+      if (changes.authError) {
+        setAuthError(!!changes.authError.newValue);
+      }
+    };
+
+    storage.onChanged.addListener(listener);
+    return () => storage.onChanged.removeListener(listener);
   }, [isOpen]);
 
   console.log(authError);
